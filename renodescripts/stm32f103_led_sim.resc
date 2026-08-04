@@ -1,10 +1,14 @@
-# Script para STM32F103CBT6 con firmware real
+# Script para simular STM32F103CBT6 con LED
 
 using sysbus
+
+# Crear la máquina
 mach create "stm32f103"
+
+# Cargar la plataforma STM32F103
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
-# LED en PC13
+# Configurar LED en puerto C, pin 13 (típico en STM32F103 "Blue Pill")
 gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40011000, +0x400>
     [0-15] -> exti@[0-15]
 
@@ -12,12 +16,17 @@ UserLED: Miscellaneous.LED @ gpioPortC
     gpioPortC: 13 -> UserLED@0
 
 # Cargar el firmware compilado
-sysbus LoadELF @../build/ST_UnitTest.elf
+# Ajusta la ruta según donde se genere tu .elf
+sysbus LoadELF @../build/Debug/ST_UnitTest.elf
 
-# Ver logs del LED
+# Mostrar logs del LED
 logLevel -1 gpioPortC.UserLED
 
-# Ejecutar por 10 segundos
+# Ejecutar la simulación
 start
+
+# Esperar 10 segundos para ver el comportamiento
 sleep 10
+
+# Salir
 quit

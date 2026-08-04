@@ -2,63 +2,25 @@ pipeline {
     agent any
 
     environment {
-        // === RUTAS DE HERRAMIENTAS ===
         PATH = "${env.PATH};D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode;D:/arm-gnu-toolchain/bin"
         RUBY_HOME = "D:/Ruby40-x64"
-        
-        // === CONFIGURACIÓN DE BUNDLER ===
         BUNDLE_PATH = "${WORKSPACE}/vendor/bundle"
         BUNDLE_DISABLE_SHARED_GEMS = "1"
         BUNDLE_GEMFILE = "${WORKSPACE}/Gemfile"
-        
-        // === CONFIGURACIÓN PARA STM32F103CBT6 ===
-        MCU = "STM32F103CBT6"
-        MCU_DEFINES = "STM32F103xB"
     }
 
     stages {
-        // ============================================================
-        // 1. ACTUALIZAR REPOSITORIO (ya clonado por Jenkins)
-        // ============================================================
         stage('Actualizar repositorio') {
             steps {
                 bat '''
-                    echo "===== WORKSPACE: %WORKSPACE% ====="
-                    echo ""
-                    echo "===== Verificando repositorio Git ====="
-                    if exist .git (
-                        echo "✅ Repositorio Git encontrado"
-                        git fetch --all
-                        git reset --hard origin/main
-                        git clean -fd
-                        echo "===== Último commit ====="
-                        git log -1 --oneline
-                    ) else (
-                        echo "❌ Repositorio Git NO encontrado"
-                        echo "Listando archivos:"
-                        dir /b
-                        exit /b 1
-                    )
-                    echo ""
-                    echo "===== Verificando archivos ====="
-                    dir /b
-                    echo ""
-                    echo "===== Verificando Gemfile ====="
-                    if exist Gemfile (
-                        echo "✅ Gemfile encontrado"
-                    ) else (
-                        echo "❌ Gemfile NO encontrado"
-                        echo "El repositorio se clonó pero el Gemfile no está en la raíz."
-                        echo "Verifica que el archivo exista en el repositorio remoto."
-                        exit /b 1
-                    )
+                    echo "===== Actualizando repositorio ====="
+                    git fetch --all
+                    git reset --hard origin/main
+                    git clean -fd
                 '''
             }
         }
 
-        // ============================================================
-        // 2. PREPARAR ENTORNO CON BUNDLER
-        // ============================================================
         stage('Preparar entorno') {
             steps {
                 echo '===== Verificando herramientas ====='
@@ -69,47 +31,23 @@ pipeline {
                 echo '===== Configurando Bundler ====='
                 bat 'bundle config set path vendor/bundle'
                 bat 'bundle config set disable_shared_gems 1'
-                
-                echo '===== Instalando dependencias del proyecto ====='
                 bat 'bundle install --jobs 4 --retry 3'
-                
-                echo '===== Verificando Ceedling ====='
-                bat 'bundle exec ceedling version'
             }
         }
 
-        // ============================================================
-        // 3. DIAGNÓSTICO: VERIFICAR ARCHIVOS DE PRUEBA
-        // ============================================================
-        stage('Verificar archivos del proyecto') {
+        stage('Compilar firmware') {
             steps {
+                echo '===== Compilando firmware ====='
                 bat '''
-                    echo "===== WORKSPACE: %WORKSPACE% ====="
-                    echo ""
-                    echo "===== Contenido de tests/ ====="
-                    if exist tests (
-                        cd tests
-                        echo "Directorio: %CD%"
-                        dir /b
-                        echo ""
-                        echo "===== Verificando project.yml ====="
-                        if exist project.yml (
-                            echo "✅ project.yml encontrado en tests/"
-                        ) else (
-                            echo "❌ project.yml NO encontrado en tests/"
-                            exit /b 1
-                        )
-                    ) else (
-                        echo "❌ tests/ NO existe"
-                        exit /b 1
-                    )
+                    echo "===== Configurando CMake ====="
+                    cmake --preset default
+                    
+                    echo "===== Compilando ====="
+                    cmake --build build --config Debug
                 '''
             }
         }
 
-        // ============================================================
-        // 4. PRUEBAS UNITARIAS CON CEEDLING
-        // ============================================================
         stage('Limpiar build de pruebas') {
             steps {
                 echo '===== Limpiando build anterior ====='
@@ -139,54 +77,62 @@ pipeline {
                         echo "❌ Error en ceedling test:all"
                         exit /b %CEEDLING_EXIT%
                     )
-                    echo "✅ Todas las pruebas pasaron"
+                    echo "✅ Todas las pruebas pasaron exitosamente!"
+                    echo "===== FIN del stage de pruebas ====="
                 '''
             }
         }
 
-        // ============================================================
-        // 5. SIMULACIÓN CON RENODE
-        // ============================================================
         stage('Simulación con Renode') {
             steps {
                 echo '===== Simulación con Renode ====='
                 dir('renodescripts') {
                     bat '''
-                        echo "===== Ejecutando Renode ====="
+                        echo "===== Verificando script de Renode ====="
                         if exist stm32f103_led_sim.resc (
                             echo "✅ Script de Renode encontrado"
-                            renode --console --disable-xwt -e "include @stm32f103_led_sim.resc; sleep 2; quit" || echo "Renode no disponible"
                         ) else (
-                            echo "⚠️  Script de Renode no encontrado"
+                            echo "❌ Script de Renode NO encontrado"
+                            exit /b 1
                         )
+                        
+                        echo "===== Verificando firmware (.elf) ====="
+                        if exist ..\\build\\Debug\\ST_UnitTest.elf (
+                            echo "✅ Firmware encontrado: ..\\build\\Debug\\ST_UnitTest.elf"
+                        ) else (
+                            echo "⚠️  Firmware NO encontrado, simulando sin él"
+                        )
+                        
+                        echo "===== Ejecutando Renode ====="
+                        renode --console --disable-xwt -e "include @stm32f103_led_sim.resc" > renode_output.log 2>&1
+                        
+                        echo "===== Salida de Renode ====="
+                        type renode_output.log
+                        
+                        echo "===== Verificando logs del LED ====="
+                        findstr "LED" renode_output.log || echo "⚠️  No se encontraron logs del LED"
                     '''
                 }
             }
         }
 
-        // ============================================================
-        // 6. PUBLICAR RESULTADOS
-        // ============================================================
         stage('Publicar resultados') {
             steps {
                 echo '===== Publicando resultados ====='
                 junit testResults: 'tests/build/test/results/*.xml', allowEmptyResults: true
                 archiveArtifacts artifacts: 'tests/build/test/out/**/*.log', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'renodescripts/*.log', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'renodescripts/renode_output.log', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'build/Debug/*.elf', allowEmptyArchive: true
             }
         }
     }
 
-    // ============================================================
-    // POST: ACCIONES AL FINAL DEL PIPELINE
-    // ============================================================
     post {
         success {
-            echo '✅ ¡Todas las pruebas y simulaciones pasaron exitosamente!'
+            echo '✅ ¡Pipeline completado exitosamente!'
         }
         failure {
             echo '❌ Algo falló. Revisa los logs.'
-            echo '📋 Consejo: Verifica que el repositorio contenga todos los archivos necesarios.'
         }
         always {
             echo '===== Fin del pipeline ====='
