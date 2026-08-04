@@ -46,8 +46,12 @@ pipeline {
                 echo '===== Instalando Bundler ====='
                 bat 'gem install bundler'
                 
+                echo '===== Configurando Bundler ====='
+                bat 'bundle config set path vendor/bundle'
+                bat 'bundle config set disable_shared_gems 1'
+                
                 echo '===== Instalando dependencias del proyecto ====='
-                bat 'bundle install --path vendor/bundle --jobs 4 --retry 3'
+                bat 'bundle install --jobs 4 --retry 3'
                 
                 echo '===== Verificando Ceedling ====='
                 bat 'bundle exec ceedling version'
@@ -90,7 +94,7 @@ pipeline {
         }
 
         // ============================================================
-        // 4. PRUEBAS UNITARIAS CON CEEDLING (usando bundle exec)
+        // 4. PRUEBAS UNITARIAS CON CEEDLING
         // ============================================================
         stage('Ejecutar pruebas unitarias') {
             steps {
