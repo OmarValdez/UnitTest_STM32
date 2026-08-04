@@ -110,28 +110,36 @@ pipeline {
         // ============================================================
         // 4. PRUEBAS UNITARIAS CON CEEDLING
         // ============================================================
+        stage('Limpiar build de pruebas') {
+            steps {
+                echo '===== Limpiando build anterior ====='
+                bat '''
+                    cd %WORKSPACE%\\tests
+                    echo "===== Ejecutando ceedling clean ====="
+                    bundle exec ceedling clean --project project.yml
+                    if %ERRORLEVEL% NEQ 0 (
+                        echo "❌ Error en ceedling clean"
+                        exit /b %ERRORLEVEL%
+                    )
+                    echo "✅ ceedling clean completado"
+                '''
+            }
+        }
+
         stage('Ejecutar pruebas unitarias') {
             steps {
                 echo '===== Ejecutando pruebas con Ceedling ====='
                 bat '''
                     cd %WORKSPACE%\\tests
-                    echo "===== Directorio actual: %CD% ====="
-                    echo "===== Contenido: ====="
-                    dir /b
-                    
-                    echo "===== Verificando project.yml ====="
-                    if exist project.yml (
-                        echo "✅ project.yml encontrado"
-                    ) else (
-                        echo "❌ project.yml NO encontrado"
-                        exit /b 1
-                    )
-                    
-                    echo "===== Ejecutando ceedling clean ====="
-                    bundle exec ceedling clean --project project.yml
-                    
                     echo "===== Ejecutando ceedling test:all ====="
                     bundle exec ceedling test:all --project project.yml
+                    set CEEDLING_EXIT=%ERRORLEVEL%
+                    echo "===== Ceedling test:all finalizado con código: %CEEDLING_EXIT% ====="
+                    if %CEEDLING_EXIT% NEQ 0 (
+                        echo "❌ Error en ceedling test:all"
+                        exit /b %CEEDLING_EXIT%
+                    )
+                    echo "✅ Todas las pruebas pasaron"
                 '''
             }
         }
