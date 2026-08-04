@@ -18,7 +18,7 @@ pipeline {
 
     stages {
         // ============================================================
-        // 1. LIMPIEZA DEL WORKSPACE
+        // 1. LIMPIEZA DEL WORKSPACE (ANTES DE CLONAR)
         // ============================================================
         stage('Limpiar workspace') {
             steps {
@@ -34,17 +34,24 @@ pipeline {
         }
 
         // ============================================================
-        // 2. ACTUALIZAR REPOSITORIO (NUEVO)
+        // 2. ACTUALIZAR REPOSITORIO (DESPUÉS DE LA LIMPIEZA)
         // ============================================================
         stage('Actualizar repositorio') {
             steps {
                 bat '''
-                    echo "===== Forzando actualización del repositorio ====="
-                    git fetch --all
-                    git reset --hard origin/main
-                    git clean -fd
-                    echo "===== Último commit ====="
-                    git log -1 --oneline
+                    echo "===== Verificando que el repositorio esté clonado ====="
+                    if exist .git (
+                        echo "✅ Repositorio Git encontrado"
+                        git fetch --all
+                        git reset --hard origin/main
+                        git clean -fd
+                        echo "===== Último commit ====="
+                        git log -1 --oneline
+                    ) else (
+                        echo "⚠️  Repositorio Git no encontrado - Jenkins debería haberlo clonado"
+                        echo "Listando archivos:"
+                        dir /b
+                    )
                     echo ""
                     echo "===== Verificando archivos ====="
                     dir /b
@@ -54,6 +61,8 @@ pipeline {
                         echo "✅ Gemfile encontrado"
                     ) else (
                         echo "❌ Gemfile NO encontrado"
+                        echo "El repositorio se clonó pero el Gemfile no está en la raíz."
+                        echo "Verifica que el archivo exista en el repositorio remoto."
                         exit /b 1
                     )
                 '''
@@ -83,7 +92,7 @@ pipeline {
         }
 
         // ============================================================
-        // 4. DIAGNÓSTICO: VERIFICAR ARCHIVOS
+        // 4. DIAGNÓSTICO: VERIFICAR ARCHIVOS DE PRUEBA
         // ============================================================
         stage('Verificar archivos del proyecto') {
             steps {
