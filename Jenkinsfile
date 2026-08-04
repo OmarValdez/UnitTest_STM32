@@ -2,11 +2,13 @@ pipeline {
     agent any
 
     environment {
-        PATH = "${env.PATH};D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode;D:/arm-gnu-toolchain/bin;D:/Program Files/CMake/bin"
+        PATH = "${env.PATH};D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode;D:/arm-gnu-toolchain/bin;D:/Program Files/CMake/bin;D:/ninja-win"
         RUBY_HOME = "D:/Ruby40-x64"
         BUNDLE_PATH = "${WORKSPACE}/vendor/bundle"
         BUNDLE_DISABLE_SHARED_GEMS = "1"
         BUNDLE_GEMFILE = "${WORKSPACE}/Gemfile"
+
+        BUILD_TYPE = "Debug"     // La variable BUILD_TYPE puede ser 'Debug' o 'Release'
     }
 
     stages {
@@ -44,11 +46,11 @@ pipeline {
                         rmdir /s /q build
                     )
                     
-                    echo "===== Configurando CMake con preset Debug ====="
-                    cmake --preset Debug
+                    echo "===== Configurando CMake con preset ${env.BUILD_TYPE} ====="
+                    cmake --preset ${env.BUILD_TYPE}
                     
                     echo "===== Compilando ====="
-                    cmake --build build --config Debug
+                    cmake --build build --config ${env.BUILD_TYPE}
                     
                     echo "===== Verificando .elf ====="
                     if exist build\\Debug\\ST_UnitTest.elf (
