@@ -41,6 +41,7 @@ pipeline {
                     // Definir BUILD_TYPE en Groovy
                     env.BUILD_TYPE = "Debug"                    // "Debug" o "Release"
                 }
+                echo '===== Compilando firmware para STM32F103CBT6 ====='
                 bat '''
                     echo "===== Limpiando build ====="
                     if exist build (
@@ -49,9 +50,19 @@ pipeline {
                     
                     echo "===== Configurando CMake con preset %BUILD_TYPE% ====="
                     cmake --preset %BUILD_TYPE%
+
+                    if %ERRORLEVEL% NEQ 0 (
+                        echo "❌ Error en cmake --preset %BUILD_TYPE%"
+                        exit /b 1
+                    )
                     
                     echo "===== Compilando ====="
-                    cmake --build build --config %BUILD_TYPE%
+                    cmake --build build/%BUILD_TYPE% --config %BUILD_TYPE%
+
+                    if %ERRORLEVEL% NEQ 0 (
+                        echo "❌ Error en la compilación"
+                        exit /b 1
+                    )
                     
                     echo "===== Verificando .elf ====="
                     if exist build\\%BUILD_TYPE%\\ST_UnitTest.elf (
