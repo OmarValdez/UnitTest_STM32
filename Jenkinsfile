@@ -37,13 +37,30 @@ pipeline {
 
         stage('Compilar firmware') {
             steps {
-                echo '===== Compilando firmware ====='
+                echo '===== Compilando firmware para STM32F103CBT6 ====='
                 bat '''
-                    echo "===== Configurando CMake ====="
-                    cmake --preset default
+                    echo "===== Limpiando build ====="
+                    if exist build (
+                        rmdir /s /q build
+                    )
+                    
+                    echo "===== Configurando CMake con preset Debug ====="
+                    cmake --preset Debug
                     
                     echo "===== Compilando ====="
                     cmake --build build --config Debug
+                    
+                    echo "===== Verificando .elf ====="
+                    if exist build\\Debug\\ST_UnitTest.elf (
+                        echo "✅ Firmware compilado correctamente"
+                    ) else if exist build\\ST_UnitTest.elf (
+                        echo "✅ Firmware compilado correctamente (en build/)"
+                    ) else (
+                        echo "❌ Error: No se encontró el archivo .elf"
+                        echo "Buscando archivos .elf en todo el workspace..."
+                        dir /s *.elf
+                        exit /b 1
+                    )
                 '''
             }
         }
