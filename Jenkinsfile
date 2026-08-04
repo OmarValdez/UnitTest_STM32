@@ -18,28 +18,14 @@ pipeline {
 
     stages {
         // ============================================================
-        // 1. LIMPIEZA DEL WORKSPACE (ANTES DE CLONAR)
-        // ============================================================
-        stage('Limpiar workspace') {
-            steps {
-                cleanWs(
-                    cleanWhenAborted: true,
-                    cleanWhenFailure: true,
-                    cleanWhenNotBuilt: true,
-                    cleanWhenSuccess: true,
-                    notFailBuild: true
-                )
-                echo '✅ Workspace limpiado (si fue posible)'
-            }
-        }
-
-        // ============================================================
-        // 2. ACTUALIZAR REPOSITORIO (DESPUÉS DE LA LIMPIEZA)
+        // 1. ACTUALIZAR REPOSITORIO (ya clonado por Jenkins)
         // ============================================================
         stage('Actualizar repositorio') {
             steps {
                 bat '''
-                    echo "===== Verificando que el repositorio esté clonado ====="
+                    echo "===== WORKSPACE: %WORKSPACE% ====="
+                    echo ""
+                    echo "===== Verificando repositorio Git ====="
                     if exist .git (
                         echo "✅ Repositorio Git encontrado"
                         git fetch --all
@@ -48,9 +34,10 @@ pipeline {
                         echo "===== Último commit ====="
                         git log -1 --oneline
                     ) else (
-                        echo "⚠️  Repositorio Git no encontrado - Jenkins debería haberlo clonado"
+                        echo "❌ Repositorio Git NO encontrado"
                         echo "Listando archivos:"
                         dir /b
+                        exit /b 1
                     )
                     echo ""
                     echo "===== Verificando archivos ====="
@@ -70,7 +57,7 @@ pipeline {
         }
 
         // ============================================================
-        // 3. PREPARAR ENTORNO CON BUNDLER
+        // 2. PREPARAR ENTORNO CON BUNDLER
         // ============================================================
         stage('Preparar entorno') {
             steps {
@@ -92,7 +79,7 @@ pipeline {
         }
 
         // ============================================================
-        // 4. DIAGNÓSTICO: VERIFICAR ARCHIVOS DE PRUEBA
+        // 3. DIAGNÓSTICO: VERIFICAR ARCHIVOS DE PRUEBA
         // ============================================================
         stage('Verificar archivos del proyecto') {
             steps {
@@ -121,7 +108,7 @@ pipeline {
         }
 
         // ============================================================
-        // 5. PRUEBAS UNITARIAS CON CEEDLING
+        // 4. PRUEBAS UNITARIAS CON CEEDLING
         // ============================================================
         stage('Ejecutar pruebas unitarias') {
             steps {
@@ -150,7 +137,7 @@ pipeline {
         }
 
         // ============================================================
-        // 6. SIMULACIÓN CON RENODE
+        // 5. SIMULACIÓN CON RENODE
         // ============================================================
         stage('Simulación con Renode') {
             steps {
@@ -170,7 +157,7 @@ pipeline {
         }
 
         // ============================================================
-        // 7. PUBLICAR RESULTADOS
+        // 6. PUBLICAR RESULTADOS
         // ============================================================
         stage('Publicar resultados') {
             steps {
