@@ -1,4 +1,5 @@
 # Script para simular STM32F103CBT6 con LED en PC13 y botón en PB12
+# Sintaxis compatible con Renode 1.16.1
 
 using sysbus
 
@@ -9,14 +10,16 @@ mach create "stm32f103"
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
 # ============================================================
-# CONFIGURACIÓN DE LED (PC13) - MÉTODO CORRECTO
+# CONFIGURACIÓN DE LED (PC13)
 # ============================================================
 # Crear el puerto C
 gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus 0x40011000
 
-# Conectar el pin 13 del puerto C a un LED
-# La sintaxis correcta es: gpioPortC.Pin[13] -> led@0
-gpioPortC.Pin[13] -> led@0
+# Crear un LED como un dispositivo simple
+led: Miscellaneous.LED
+
+# Conectar el pin 13 del puerto C al LED
+gpioPortC.Connect(13, led)
 
 # ============================================================
 # CONFIGURACIÓN DE BOTÓN (PB12)
@@ -24,9 +27,11 @@ gpioPortC.Pin[13] -> led@0
 # Crear el puerto B
 gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus 0x40010C00
 
-# Crear un botón en el pin 12 del puerto B
-button@0: Miscellaneous.Button
-gpioPortB.Pin[12] -> button@0
+# Crear un botón
+button: Miscellaneous.Button
+
+# Conectar el pin 12 del puerto B al botón
+gpioPortB.Connect(12, button)
 
 # ============================================================
 # CARGAR FIRMWARE
@@ -34,7 +39,7 @@ gpioPortB.Pin[12] -> button@0
 # Cargar el firmware compilado
 if File.Exists(@../build/Debug/ST_UnitTest.elf) then
     sysbus LoadELF @../build/Debug/ST_UnitTest.elf
-    echo "✅ Firmware cargado correctamente desde ../build/Debug/ST_UnitTest.elf"
+    echo "✅ Firmware cargado correctamente"
 else
     echo "⚠️  Firmware no encontrado: ../build/Debug/ST_UnitTest.elf"
 end
@@ -43,10 +48,10 @@ end
 # LOGS
 # ============================================================
 # Mostrar logs del LED
-logLevel -1 gpioPortC.Pin[13]
+logLevel -1 led
 
 # ============================================================
-# SIMULAR PULSACIONES DE BOTÓN (opcional)
+# SIMULACIÓN Y PRUEBAS
 # ============================================================
 # Iniciar la simulación
 start
@@ -56,12 +61,12 @@ sleep 2
 
 # Simular una pulsación del botón
 echo "🟢 Simulando pulsación del botón..."
-button@0 Press
+button Press
 sleep 1
-button@0 Release
+button Release
 echo "🟢 Botón liberado"
 
-# Esperar 5 segundos más para ver el comportamiento
+# Esperar más tiempo para ver el comportamiento
 sleep 5
 
 # Salir
