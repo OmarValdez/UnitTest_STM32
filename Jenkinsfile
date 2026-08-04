@@ -34,7 +34,34 @@ pipeline {
         }
 
         // ============================================================
-        // 2. PREPARAR ENTORNO CON BUNDLER
+        // 2. ACTUALIZAR REPOSITORIO (NUEVO)
+        // ============================================================
+        stage('Actualizar repositorio') {
+            steps {
+                bat '''
+                    echo "===== Forzando actualización del repositorio ====="
+                    git fetch --all
+                    git reset --hard origin/main
+                    git clean -fd
+                    echo "===== Último commit ====="
+                    git log -1 --oneline
+                    echo ""
+                    echo "===== Verificando archivos ====="
+                    dir /b
+                    echo ""
+                    echo "===== Verificando Gemfile ====="
+                    if exist Gemfile (
+                        echo "✅ Gemfile encontrado"
+                    ) else (
+                        echo "❌ Gemfile NO encontrado"
+                        exit /b 1
+                    )
+                '''
+            }
+        }
+
+        // ============================================================
+        // 3. PREPARAR ENTORNO CON BUNDLER
         // ============================================================
         stage('Preparar entorno') {
             steps {
@@ -42,9 +69,6 @@ pipeline {
                 bat 'ruby --version'
                 bat 'gcc --version'
                 bat 'renode --version || echo "Renode no encontrado"'
-                
-                echo '===== Instalando Bundler ====='
-                bat 'gem install bundler'
                 
                 echo '===== Configurando Bundler ====='
                 bat 'bundle config set path vendor/bundle'
@@ -59,15 +83,12 @@ pipeline {
         }
 
         // ============================================================
-        // 3. DIAGNÓSTICO: VERIFICAR ARCHIVOS
+        // 4. DIAGNÓSTICO: VERIFICAR ARCHIVOS
         // ============================================================
         stage('Verificar archivos del proyecto') {
             steps {
                 bat '''
                     echo "===== WORKSPACE: %WORKSPACE% ====="
-                    echo ""
-                    echo "===== Contenido del workspace ====="
-                    dir /b
                     echo ""
                     echo "===== Contenido de tests/ ====="
                     if exist tests (
@@ -80,9 +101,6 @@ pipeline {
                             echo "✅ project.yml encontrado en tests/"
                         ) else (
                             echo "❌ project.yml NO encontrado en tests/"
-                            echo "Buscando en todo el workspace..."
-                            cd ..
-                            dir /s project.yml
                             exit /b 1
                         )
                     ) else (
@@ -94,7 +112,7 @@ pipeline {
         }
 
         // ============================================================
-        // 4. PRUEBAS UNITARIAS CON CEEDLING
+        // 5. PRUEBAS UNITARIAS CON CEEDLING
         // ============================================================
         stage('Ejecutar pruebas unitarias') {
             steps {
@@ -123,7 +141,7 @@ pipeline {
         }
 
         // ============================================================
-        // 5. SIMULACIÓN CON RENODE
+        // 6. SIMULACIÓN CON RENODE
         // ============================================================
         stage('Simulación con Renode') {
             steps {
@@ -143,7 +161,7 @@ pipeline {
         }
 
         // ============================================================
-        // 6. PUBLICAR RESULTADOS
+        // 7. PUBLICAR RESULTADOS
         // ============================================================
         stage('Publicar resultados') {
             steps {
