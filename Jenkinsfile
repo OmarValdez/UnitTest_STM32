@@ -2,11 +2,14 @@ pipeline {
     agent any
 
     environment {
-        // === RUTAS DE HERRAMIENTAS EN EL SERVIDOR JENKINS ===
+        // === RUTAS DE HERRAMIENTAS ===
         PATH = "${env.PATH};D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode;D:/arm-gnu-toolchain/bin"
         RUBY_HOME = "D:/Ruby40-x64"
-        GEM_PATH = "D:/Ruby40-x64/lib/ruby/gems/4.0.0"
-        GEM_HOME = "D:/Ruby40-x64/lib/ruby/gems/4.0.0"
+        
+        // === CONFIGURACIÓN DE BUNDLER ===
+        BUNDLE_PATH = "${WORKSPACE}/vendor/bundle"
+        BUNDLE_DISABLE_SHARED_GEMS = "1"
+        BUNDLE_GEMFILE = "${WORKSPACE}/Gemfile"
         
         // === CONFIGURACIÓN PARA STM32F103CBT6 ===
         MCU = "STM32F103CBT6"
@@ -15,7 +18,7 @@ pipeline {
 
     stages {
         // ============================================================
-        // 1. LIMPIEZA DEL WORKSPACE (sin fallar si hay archivos bloqueados)
+        // 1. LIMPIEZA DEL WORKSPACE
         // ============================================================
         stage('Limpiar workspace') {
             steps {
@@ -24,27 +27,35 @@ pipeline {
                     cleanWhenFailure: true,
                     cleanWhenNotBuilt: true,
                     cleanWhenSuccess: true,
-                    notFailBuild: true   // ← CORREGIDO: notFailBuild en lugar de notFail
+                    notFailBuild: true
                 )
                 echo '✅ Workspace limpiado (si fue posible)'
             }
         }
 
         // ============================================================
-        // 2. VERIFICACIÓN DE HERRAMIENTAS
+        // 2. PREPARAR ENTORNO CON BUNDLER
         // ============================================================
         stage('Preparar entorno') {
             steps {
                 echo '===== Verificando herramientas ====='
                 bat 'ruby --version'
                 bat 'gcc --version'
-                bat 'ceedling version'
                 bat 'renode --version || echo "Renode no encontrado"'
+                
+                echo '===== Instalando Bundler ====='
+                bat 'gem install bundler'
+                
+                echo '===== Instalando dependencias del proyecto ====='
+                bat 'bundle install --path vendor/bundle --jobs 4 --retry 3'
+                
+                echo '===== Verificando Ceedling ====='
+                bat 'bundle exec ceedling version'
             }
         }
 
         // ============================================================
-        // 3. DIAGNÓSTICO: VERIFICAR QUE LOS ARCHIVOS ESTÉN EN EL WORKSPACE
+        // 3. DIAGNÓSTICO: VERIFICAR ARCHIVOS
         // ============================================================
         stage('Verificar archivos del proyecto') {
             steps {
@@ -79,7 +90,7 @@ pipeline {
         }
 
         // ============================================================
-        // 4. PRUEBAS UNITARIAS CON CEEDLING
+        // 4. PRUEBAS UNITARIAS CON CEEDLING (usando bundle exec)
         // ============================================================
         stage('Ejecutar pruebas unitarias') {
             steps {
@@ -99,16 +110,16 @@ pipeline {
                     )
                     
                     echo "===== Ejecutando ceedling clean ====="
-                    ceedling clean --project project.yml
+                    bundle exec ceedling clean --project project.yml
                     
                     echo "===== Ejecutando ceedling test:all ====="
-                    ceedling test:all --project project.yml
+                    bundle exec ceedling test:all --project project.yml
                 '''
             }
         }
 
         // ============================================================
-        // 5. SIMULACIÓN CON RENODE (STM32F103CBT6)
+        // 5. SIMULACIÓN CON RENODE
         // ============================================================
         stage('Simulación con Renode') {
             steps {
