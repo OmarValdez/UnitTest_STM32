@@ -7,8 +7,6 @@ pipeline {
         BUNDLE_PATH = "${WORKSPACE}/vendor/bundle"
         BUNDLE_DISABLE_SHARED_GEMS = "1"
         BUNDLE_GEMFILE = "${WORKSPACE}/Gemfile"
-
-        BUILD_TYPE = "Debug"     // La variable BUILD_TYPE puede ser 'Debug' o 'Release'
     }
 
     stages {
@@ -39,21 +37,24 @@ pipeline {
 
         stage('Compilar firmware') {
             steps {
-                echo '===== Compilando firmware para STM32F103CBT6 ====='
+                script {
+                    // Definir BUILD_TYPE en Groovy
+                    env.BUILD_TYPE = "Debug"                    // "Debug" o "Release"
+                }
                 bat '''
                     echo "===== Limpiando build ====="
                     if exist build (
                         rmdir /s /q build
                     )
                     
-                    echo "===== Configurando CMake con preset ${env.BUILD_TYPE} ====="
-                    cmake --preset ${env.BUILD_TYPE}
+                    echo "===== Configurando CMake con preset %BUILD_TYPE% ====="
+                    cmake --preset %BUILD_TYPE%
                     
                     echo "===== Compilando ====="
-                    cmake --build build --config ${env.BUILD_TYPE}
+                    cmake --build build --config %BUILD_TYPE%
                     
                     echo "===== Verificando .elf ====="
-                    if exist build\\Debug\\ST_UnitTest.elf (
+                    if exist build\\%BUILD_TYPE%\\ST_UnitTest.elf (
                         echo "✅ Firmware compilado correctamente"
                     ) else if exist build\\ST_UnitTest.elf (
                         echo "✅ Firmware compilado correctamente (en build/)"
