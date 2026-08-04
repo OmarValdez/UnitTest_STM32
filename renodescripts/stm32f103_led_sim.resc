@@ -1,0 +1,23 @@
+# Script para STM32F103CBT6 con firmware real
+
+using sysbus
+mach create "stm32f103"
+machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
+
+# LED en PC13
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40011000, +0x400>
+    [0-15] -> exti@[0-15]
+
+UserLED: Miscellaneous.LED @ gpioPortC
+    gpioPortC: 13 -> UserLED@0
+
+# Cargar el firmware compilado
+sysbus LoadELF @../build/ST_UnitTest.elf
+
+# Ver logs del LED
+logLevel -1 gpioPortC.UserLED
+
+# Ejecutar por 10 segundos
+start
+sleep 10
+quit
