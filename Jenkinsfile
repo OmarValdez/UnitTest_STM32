@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PATH = "${env.PATH};D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode;D:/arm-gnu-toolchain/bin"
+        PATH = "${env.PATH};D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode;D:/arm-gnu-toolchain/bin;D:/Program Files/CMake/bin"
         RUBY_HOME = "D:/Ruby40-x64"
         BUNDLE_PATH = "${WORKSPACE}/vendor/bundle"
         BUNDLE_DISABLE_SHARED_GEMS = "1"
