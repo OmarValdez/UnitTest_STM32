@@ -1,4 +1,4 @@
-# Script para simular STM32F103CBT6 con LED
+# Script para simular STM32F103CBT6 con LED en PC13 y botón en PB12
 
 using sysbus
 
@@ -8,25 +8,64 @@ mach create "stm32f103"
 # Cargar la plataforma STM32F103
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
-# Configurar LED en puerto C, pin 13 (típico en STM32F103 "Blue Pill")
+# ============================================================
+# CONFIGURACIÓN DE LED (PC13)
+# ============================================================
+# Crear el puerto C en la dirección correcta
 gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40011000, +0x400>
-    [0-15] -> exti@[0-15]
 
+# Crear el LED en el pin 13 del puerto C
 UserLED: Miscellaneous.LED @ gpioPortC
     gpioPortC: 13 -> UserLED@0
 
-# Cargar el firmware compilado
-# Ajusta la ruta según donde se genere tu .elf
-sysbus LoadELF @../build/Debug/ST_UnitTest.elf
+# ============================================================
+# CONFIGURACIÓN DE BOTÓN (PB12) - OPCIONAL
+# ============================================================
+# Crear el puerto B en la dirección correcta
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x40010C00, +0x400>
 
-# Mostrar logs del LED
+# Crear un botón en el pin 12 del puerto B
+UserButton: Miscellaneous.Button @ gpioPortB
+    gpioPortB: 12 -> UserButton@0
+
+# ============================================================
+# CARGAR FIRMWARE
+# ============================================================
+# Cargar el firmware compilado
+if File.Exists(@../build/Debug/ST_UnitTest.elf) then
+    sysbus LoadELF @../build/Debug/ST_UnitTest.elf
+    echo "✅ Firmware cargado correctamente desde ../build/Debug/ST_UnitTest.elf"
+else
+    echo "⚠️  Firmware no encontrado: ../build/Debug/ST_UnitTest.elf"
+end
+
+# ============================================================
+# LOGS
+# ============================================================
+# Mostrar logs del LED en la consola
 logLevel -1 gpioPortC.UserLED
 
-# Ejecutar la simulación
+# Mostrar logs del botón (opcional)
+# logLevel -1 gpioPortB.UserButton
+
+# ============================================================
+# EJECUTAR SIMULACIÓN
+# ============================================================
+# Iniciar la simulación
 start
+
+sleep 3
+gpioPortB.UserButton Press
+sleep 1
+gpioPortB.UserButton Release
 
 # Esperar 10 segundos para ver el comportamiento
 sleep 10
+
+sleep 3
+gpioPortB.UserButton Press
+sleep 1
+gpioPortB.UserButton Release
 
 # Salir
 quit
