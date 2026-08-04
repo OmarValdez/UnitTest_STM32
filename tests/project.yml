@@ -1,0 +1,52 @@
+:project:
+  :build_root: build
+  :release_build: FALSE
+  :test_file_prefix: test_
+
+:paths:
+  :test:
+    - +:test/
+  :source:
+    - ../Core/Src/
+  :include:
+    - ../Core/Inc/
+    - test/support/
+  :support:
+    - test/support/
+
+:files:
+  :source:
+    - ../Core/Src/*.c
+  :test:
+    - test/test_*.c
+  :support:
+    - test/support/*.c
+
+:defines:
+  :test:
+    - UNITY_INCLUDE_DOUBLE
+
+# === CMOCK DESHABILITADO ===
+:cmock:
+  :enabled: false
+
+# === HABILITAR GENERACIÓN AUTOMÁTICA DE RUNNERS ===
+:test_runner:
+  :enabled: true   # ← Cambiado a true
+
+:tools:
+  :test_compiler:
+    :executable: gcc
+    :arguments:
+      - -I"../Core/Inc"
+      - -I"test/support/"
+      - -I"D:/Ruby40-x64/lib/ruby/gems/4.0.0/gems/ceedling-1.1.2/vendor/unity/src"
+      - -DUNITY_INCLUDE_DOUBLE
+      - -c "${1}"
+      - -o "${2}"
+  :test_linker:
+    :executable: gcc
+    :arguments:
+      - "${1}"
+      - -o "${2}"
+      - -lm

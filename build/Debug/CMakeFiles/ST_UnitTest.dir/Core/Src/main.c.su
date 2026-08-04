@@ -1,0 +1,7 @@
+E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/main.c:59:6:HAL_GPIO_EXTI_Callback	16	static
+E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/main.c:68:6:FallaSensor_ENS160	4	static
+E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/main.c:72:6:read_ENS160	24	static
+E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/main.c:109:5:main	8	static
+E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/main.c:155:6:SystemClock_Config	72	static
+E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/main.c:194:6:Error_Handler	4	static,ignoring_inline_asm
+E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/main.c:210:6:assert_failed	16	static

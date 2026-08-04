@@ -1,0 +1,8 @@
+{
+	"InstallScripts" : 
+	[
+		"E:/UnitTest_stm32_example/ST_UnitTest/build/Debug/cmake_install.cmake",
+		"E:/UnitTest_stm32_example/ST_UnitTest/build/Debug/cmake/stm32cubemx/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
