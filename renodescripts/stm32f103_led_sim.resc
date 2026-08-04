@@ -9,24 +9,24 @@ mach create "stm32f103"
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
 # ============================================================
-# CONFIGURACIÓN DE LED (PC13)
+# CONFIGURACIÓN DE LED (PC13) - MÉTODO CORRECTO
 # ============================================================
-# Crear el puerto C en la dirección correcta
-gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40011000, +0x400>
+# Crear el puerto C
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus 0x40011000
 
-# Crear el LED en el pin 13 del puerto C
-UserLED: Miscellaneous.LED @ gpioPortC
-    gpioPortC: 13 -> UserLED@0
+# Conectar el pin 13 del puerto C a un LED
+# La sintaxis correcta es: gpioPortC.Pin[13] -> led@0
+gpioPortC.Pin[13] -> led@0
 
 # ============================================================
-# CONFIGURACIÓN DE BOTÓN (PB12) - OPCIONAL
+# CONFIGURACIÓN DE BOTÓN (PB12)
 # ============================================================
-# Crear el puerto B en la dirección correcta
-gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x40010C00, +0x400>
+# Crear el puerto B
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus 0x40010C00
 
 # Crear un botón en el pin 12 del puerto B
-UserButton: Miscellaneous.Button @ gpioPortB
-    gpioPortB: 12 -> UserButton@0
+button@0: Miscellaneous.Button
+gpioPortB.Pin[12] -> button@0
 
 # ============================================================
 # CARGAR FIRMWARE
@@ -42,30 +42,27 @@ end
 # ============================================================
 # LOGS
 # ============================================================
-# Mostrar logs del LED en la consola
-logLevel -1 gpioPortC.UserLED
-
-# Mostrar logs del botón (opcional)
-# logLevel -1 gpioPortB.UserButton
+# Mostrar logs del LED
+logLevel -1 gpioPortC.Pin[13]
 
 # ============================================================
-# EJECUTAR SIMULACIÓN
+# SIMULAR PULSACIONES DE BOTÓN (opcional)
 # ============================================================
 # Iniciar la simulación
 start
 
-sleep 3
-gpioPortB.UserButton Press
-sleep 1
-gpioPortB.UserButton Release
+# Esperar 2 segundos
+sleep 2
 
-# Esperar 10 segundos para ver el comportamiento
-sleep 10
-
-sleep 3
-gpioPortB.UserButton Press
+# Simular una pulsación del botón
+echo "🟢 Simulando pulsación del botón..."
+button@0 Press
 sleep 1
-gpioPortB.UserButton Release
+button@0 Release
+echo "🟢 Botón liberado"
+
+# Esperar 5 segundos más para ver el comportamiento
+sleep 5
 
 # Salir
 quit
