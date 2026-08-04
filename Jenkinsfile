@@ -128,10 +128,10 @@ pipeline {
                         )
                         
                         echo "===== Verificando firmware (.elf) ====="
-                        if exist ..\\build\\Debug\\ST_UnitTest.elf (
-                            echo "✅ Firmware encontrado: ..\\build\\Debug\\ST_UnitTest.elf"
+                        if exist ..\\build\\%BUILD_TYPE%\\ST_UnitTest.elf (
+                            echo "✅ Firmware encontrado: ..\\build\\%BUILD_TYPE%\\ST_UnitTest.elf"
                         ) else (
-                            echo "⚠️  Firmware NO encontrado, simulando sin él"
+                            echo "⚠️  Firmware NO encontrado"
                         )
                         
                         echo "===== Ejecutando Renode ====="
@@ -141,7 +141,10 @@ pipeline {
                         type renode_output.log
                         
                         echo "===== Verificando logs del LED ====="
-                        findstr "LED" renode_output.log || echo "⚠️  No se encontraron logs del LED"
+                        findstr "led:" renode_output.log || echo "⚠️  No se encontraron logs del LED"
+                        
+                        echo "===== Verificando logs del botón ====="
+                        findstr "button:" renode_output.log || echo "⚠️  No se encontraron logs del botón"
                     '''
                 }
             }

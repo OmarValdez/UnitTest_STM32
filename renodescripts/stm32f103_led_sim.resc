@@ -1,73 +1,116 @@
-# Script para simular STM32F103CBT6 con LED en PC13 y botón en PB12
-# Sintaxis compatible con Renode 1.16.1
+# ============================================================
+# SCRIPT COMPLETO PARA STM32F103CBT6
+# LED en PC13, Botón en PB12 con interrupción
+# ============================================================
 
 using sysbus
 
-# Crear la máquina
+# ============================================================
+# 1. CREAR MÁQUINA Y CARGAR PLATAFORMA
+# ============================================================
 mach create "stm32f103"
-
-# Cargar la plataforma STM32F103
-machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
+machine LoadPlatformDescription "D:/Program Files/Renode/platforms/cpus/stm32f103.repl"
 
 # ============================================================
-# CONFIGURACIÓN DE LED (PC13)
+# 2. CONFIGURAR LED (PC13)
 # ============================================================
-# Crear el puerto C
-gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus 0x40011000
-
-# Crear un LED como un dispositivo simple
+# El puerto C ya existe en la plataforma (dirección 0x40011000)
+# Crear un LED y conectarlo al pin 13
 led: Miscellaneous.LED
-
-# Conectar el pin 13 del puerto C al LED
 gpioPortC.Connect(13, led)
 
 # ============================================================
-# CONFIGURACIÓN DE BOTÓN (PB12)
+# 3. CONFIGURAR BOTÓN (PB12) CON INTERRUPCIÓN
 # ============================================================
-# Crear el puerto B
-gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus 0x40010C00
-
-# Crear un botón
+# El puerto B ya existe en la plataforma (dirección 0x40010C00)
+# Crear un botón y conectarlo al pin 12
 button: Miscellaneous.Button
-
-# Conectar el pin 12 del puerto B al botón
 gpioPortB.Connect(12, button)
 
 # ============================================================
-# CARGAR FIRMWARE
+# 4. CONFIGURAR INTERRUPCIÓN PARA EL BOTÓN
 # ============================================================
-# Cargar el firmware compilado
-if File.Exists(@../build/Debug/ST_UnitTest.elf) then
-    sysbus LoadELF @../build/Debug/ST_UnitTest.elf
-    echo "✅ Firmware cargado correctamente"
+# En STM32F103, EXTI (External Interrupt) maneja las interrupciones
+# Conectar el pin 12 del puerto B al EXTI
+gpioPortB.Connect(12, sysbus.exti.Line[12])
+
+# ============================================================
+# 5. CARGAR FIRMWARE
+# ============================================================
+if File.Exists("../build/Debug/ST_UnitTest.elf") then
+    sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
+    echo "✅ Firmware cargado correctamente desde ../build/Debug/ST_UnitTest.elf"
 else
     echo "⚠️  Firmware no encontrado: ../build/Debug/ST_UnitTest.elf"
+    echo "⚠️  Continuando sin firmware..."
 end
 
 # ============================================================
-# LOGS
+# 6. LOGS PARA DEPURACIÓN
 # ============================================================
-# Mostrar logs del LED
+# Logs del LED (cuando cambia de estado)
 logLevel -1 led
 
+# Logs del botón (cuando se presiona o libera)
+logLevel -1 button
+
+# Logs de la interrupción (opcional)
+# logLevel -1 sysbus.exti
+
 # ============================================================
-# SIMULACIÓN Y PRUEBAS
+# 7. SIMULACIÓN DE COMPORTAMIENTO
 # ============================================================
+echo "======================================================"
+echo "🟢 SIMULACIÓN INICIADA"
+echo "   LED en PC13"
+echo "   Botón en PB12 (con interrupción)"
+echo "======================================================"
+
 # Iniciar la simulación
 start
 
-# Esperar 2 segundos
+# ============================================================
+# 8. SIMULAR PULSACIONES DEL BOTÓN
+# ============================================================
+echo ""
+echo "🟢 Esperando 2 segundos..."
 sleep 2
 
-# Simular una pulsación del botón
-echo "🟢 Simulando pulsación del botón..."
+echo "🟢 Presionando botón (simula interrupción)..."
+button Press
+echo "   ✅ Botón presionado (flanco de subida)"
+sleep 1
+
+echo "🟢 Liberando botón..."
+button Release
+echo "   ✅ Botón liberado (flanco de bajada)"
+sleep 1
+
+echo "🟢 Presionando botón nuevamente..."
+button Press
+echo "   ✅ Botón presionado (flanco de subida)"
+sleep 1
+
+echo "🟢 Liberando botón..."
+button Release
+echo "   ✅ Botón liberado (flanco de bajada)"
+sleep 1
+
+echo "🟢 Presionando botón por última vez..."
 button Press
 sleep 1
 button Release
-echo "🟢 Botón liberado"
 
-# Esperar más tiempo para ver el comportamiento
-sleep 5
+# ============================================================
+# 9. ESPERAR Y FINALIZAR
+# ============================================================
+echo ""
+echo "🟢 Esperando 3 segundos para observar el estado final..."
+sleep 3
 
-# Salir
+echo ""
+echo "======================================================"
+echo "🟢 SIMULACIÓN FINALIZADA"
+echo "======================================================"
+
 quit
