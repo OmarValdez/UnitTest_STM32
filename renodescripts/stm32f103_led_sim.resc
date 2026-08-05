@@ -14,51 +14,42 @@ machine LoadPlatformDescription "D:/Program Files/Renode/platforms/cpus/stm32f10
 # ============================================================
 # 2. CONFIGURAR LED (PC13)
 # ============================================================
-# El puerto C ya existe en la plataforma (dirección 0x40011000)
-# Crear un LED y conectarlo al pin 13
+# Crear un LED como un dispositivo
 led: Miscellaneous.LED
+
+# Conectar el pin 13 del puerto C al LED
 gpioPortC.Connect(13, led)
 
 # ============================================================
 # 3. CONFIGURAR BOTÓN (PB12) CON INTERRUPCIÓN
 # ============================================================
-# El puerto B ya existe en la plataforma (dirección 0x40010C00)
-# Crear un botón y conectarlo al pin 12
+# Crear un botón como un dispositivo
 button: Miscellaneous.Button
+
+# Conectar el pin 12 del puerto B al botón
 gpioPortB.Connect(12, button)
 
-# ============================================================
-# 4. CONFIGURAR INTERRUPCIÓN PARA EL BOTÓN
-# ============================================================
-# En STM32F103, EXTI (External Interrupt) maneja las interrupciones
-# Conectar el pin 12 del puerto B al EXTI
+# Conectar el pin 12 del puerto B al EXTI para interrupciones
 gpioPortB.Connect(12, sysbus.exti.Line[12])
 
 # ============================================================
-# 5. CARGAR FIRMWARE
+# 4. CARGAR FIRMWARE
 # ============================================================
 if File.Exists("../build/Debug/ST_UnitTest.elf") then
     sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
-    echo "✅ Firmware cargado correctamente desde ../build/Debug/ST_UnitTest.elf"
+    echo "✅ Firmware cargado correctamente"
 else
-    echo "⚠️  Firmware no encontrado: ../build/Debug/ST_UnitTest.elf"
-    echo "⚠️  Continuando sin firmware..."
+    echo "⚠️  Firmware no encontrado"
 end
 
 # ============================================================
-# 6. LOGS PARA DEPURACIÓN
+# 5. LOGS PARA DEPURACIÓN
 # ============================================================
-# Logs del LED (cuando cambia de estado)
 logLevel -1 led
-
-# Logs del botón (cuando se presiona o libera)
 logLevel -1 button
 
-# Logs de la interrupción (opcional)
-# logLevel -1 sysbus.exti
-
 # ============================================================
-# 7. SIMULACIÓN DE COMPORTAMIENTO
+# 6. SIMULACIÓN
 # ============================================================
 echo "======================================================"
 echo "🟢 SIMULACIÓN INICIADA"
@@ -66,34 +57,30 @@ echo "   LED en PC13"
 echo "   Botón en PB12 (con interrupción)"
 echo "======================================================"
 
-# Iniciar la simulación
 start
 
-# ============================================================
-# 8. SIMULAR PULSACIONES DEL BOTÓN
-# ============================================================
 echo ""
 echo "🟢 Esperando 2 segundos..."
 sleep 2
 
-echo "🟢 Presionando botón (simula interrupción)..."
+echo "🟢 Presionando botón..."
 button Press
-echo "   ✅ Botón presionado (flanco de subida)"
+echo "   ✅ Botón presionado"
 sleep 1
 
 echo "🟢 Liberando botón..."
 button Release
-echo "   ✅ Botón liberado (flanco de bajada)"
+echo "   ✅ Botón liberado"
 sleep 1
 
 echo "🟢 Presionando botón nuevamente..."
 button Press
-echo "   ✅ Botón presionado (flanco de subida)"
+echo "   ✅ Botón presionado"
 sleep 1
 
 echo "🟢 Liberando botón..."
 button Release
-echo "   ✅ Botón liberado (flanco de bajada)"
+echo "   ✅ Botón liberado"
 sleep 1
 
 echo "🟢 Presionando botón por última vez..."
@@ -101,14 +88,10 @@ button Press
 sleep 1
 button Release
 
-# ============================================================
-# 9. ESPERAR Y FINALIZAR
-# ============================================================
 echo ""
-echo "🟢 Esperando 3 segundos para observar el estado final..."
+echo "🟢 Esperando 3 segundos..."
 sleep 3
 
-echo ""
 echo "======================================================"
 echo "🟢 SIMULACIÓN FINALIZADA"
 echo "======================================================"
