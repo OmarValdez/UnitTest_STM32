@@ -27,8 +27,8 @@ echo "✅ Firmware cargado correctamente"
 # ============================================================
 # 5. LOGS
 # ============================================================
-logLevel -1 sysbus.led
-logLevel -1 sysbus.button
+logLevel -1 led
+logLevel -1 button
 
 # ============================================================
 # 6. SIMULACIÓN
@@ -45,8 +45,20 @@ echo ""
 echo "🟢 Esperando 2 segundos..."
 sleep 2
 
-# Para el botón, simular pulsación
-# Execute Command "button Press"
+echo "🟢 Presionando botón..."
+sysbus.button Press
+echo "   ✅ Botón presionado"
+sleep 1
+
+echo "🟢 Liberando botón..."
+sysbus.button Release
+echo "   ✅ Botón liberado"
+sleep 1
+
+echo "🟢 Presionando botón nuevamente..."
+sysbus.button Press
+sleep 1
+sysbus.button Release
 
 echo ""
 echo "🟢 Esperando 3 segundos..."
