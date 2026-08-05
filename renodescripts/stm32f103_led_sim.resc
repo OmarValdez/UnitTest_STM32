@@ -27,8 +27,8 @@ echo "✅ Firmware cargado correctamente"
 # ============================================================
 # 5. LOGS
 # ============================================================
-# logLevel -1 sysbus.led
-# logLevel -1 sysbus.button
+logLevel -1 sysbus.led
+logLevel -1 sysbus.button
 
 # ============================================================
 # 6. SIMULACIÓN
@@ -41,15 +41,12 @@ echo "======================================================"
 
 start
 
-gpioPortC.Pin[13] Write true  # Encender LED
-gpioPortC.Pin[13] Write false # Apagar LED
-
 echo ""
 echo "🟢 Esperando 2 segundos..."
 sleep 2
 
 # Para el botón, simular pulsación
-Execute Command "button Press"
+# Execute Command "button Press"
 
 echo ""
 echo "🟢 Esperando 3 segundos..."
