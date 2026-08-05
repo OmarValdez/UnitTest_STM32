@@ -1,5 +1,6 @@
 # ============================================================
 # SCRIPT DEFINITIVO PARA STM32F103CBT6
+# CREANDO DISPOSITIVOS EN SYSBUS
 # ============================================================
 
 using sysbus
@@ -11,17 +12,13 @@ mach create "stm32f103"
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
 # ============================================================
-# 3. CREAR DISPOSITIVOS MANUALMENTE EN SYSBUS
+# 3. CREAR DISPOSITIVOS EN SYSBUS
 # ============================================================
-# machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
-# machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
-# Crear LED usando el GPIO existente
-led: Miscellaneous.LED
-gpioPortC.Pin[13] -> led
-# Crear botón usando el GPIO existente
-button: Miscellaneous.Button
-gpioPortB.Pin[12] -> button
+# Crear LED en PC13 usando sysbus
+sysbus.led: Miscellaneous.LED @ sysbus.gpioPortC 13
 
+# Crear botón en PB12 usando sysbus
+sysbus.button: Miscellaneous.Button @ sysbus.gpioPortB 12
 
 # ============================================================
 # 4. CARGAR FIRMWARE
@@ -33,8 +30,8 @@ echo "✅ Firmware cargado correctamente"
 # ============================================================
 # 5. LOGS
 # ============================================================
-logLevel -1 led
-logLevel -1 button
+logLevel -1 sysbus.led
+logLevel -1 sysbus.button
 
 # ============================================================
 # 6. SIMULACIÓN
@@ -52,19 +49,19 @@ echo "🟢 Esperando 2 segundos..."
 sleep 2
 
 echo "🟢 Presionando botón..."
-button Press
+sysbus.button Press
 echo "   ✅ Botón presionado"
 sleep 1
 
 echo "🟢 Liberando botón..."
-button Release
+sysbus.button Release
 echo "   ✅ Botón liberado"
 sleep 1
 
 echo "🟢 Presionando botón nuevamente..."
-button Press
+sysbus.button Press
 sleep 1
-button Release
+sysbus.button Release
 
 echo ""
 echo "🟢 Esperando 3 segundos..."
