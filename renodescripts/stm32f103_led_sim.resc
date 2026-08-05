@@ -13,9 +13,15 @@ machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 # ============================================================
 # 3. CREAR DISPOSITIVOS MANUALMENTE EN SYSBUS
 # ============================================================
-# Definir dispositivos usando REPL string
-machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
-machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
+# machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
+# machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
+# Crear LED usando el GPIO existente
+led: Miscellaneous.LED
+gpioPortC.Pin[13] -> led
+# Crear botón usando el GPIO existente
+button: Miscellaneous.Button
+gpioPortB.Pin[12] -> button
+
 
 # ============================================================
 # 4. CARGAR FIRMWARE
