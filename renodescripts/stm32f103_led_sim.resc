@@ -1,5 +1,6 @@
 # ============================================================
-# SCRIPT BASADO EN EL EJEMPLO OFICIAL DE RENODE
+# SCRIPT PARA STM32F103CBT6
+# BASADO EN EL EJEMPLO OFICIAL DE RENODE
 # ============================================================
 
 using sysbus
@@ -17,16 +18,25 @@ machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13
 # Definir botón en PB12 con interrupción
 machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
 
-# 4. CARGAR FIRMWARE (sin comillas)
-# La sintaxis correcta es: sysbus LoadELF ruta/al/archivo.elf
-sysbus LoadELF ../build/Debug/ST_UnitTest.elf
-echo "✅ Firmware cargado correctamente"
+# ============================================================
+# 4. CARGAR FIRMWARE (usando $bin?=)
+# ============================================================
+# Definir la ruta del firmware
+$bin?=@../build/Debug/ST_UnitTest.elf
 
+# Cargar el firmware
+sysbus LoadELF $bin
+echo "✅ Firmware cargado correctamente desde $bin"
+
+# ============================================================
 # 5. LOGS
+# ============================================================
 logLevel -1 led
 logLevel -1 button
 
+# ============================================================
 # 6. SIMULACIÓN
+# ============================================================
 echo "======================================================"
 echo "🟢 SIMULACIÓN INICIADA"
 echo "   LED en PC13"
