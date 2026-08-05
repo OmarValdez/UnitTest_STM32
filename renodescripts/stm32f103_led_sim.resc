@@ -17,13 +17,10 @@ machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13
 # Definir botón en PB12 con interrupción
 machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
 
-# 4. CARGAR FIRMWARE
-if File.Exists("../build/Debug/ST_UnitTest.elf") then
-    sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
-    echo "✅ Firmware cargado correctamente"
-else
-    echo "⚠️  Firmware no encontrado: ../build/Debug/ST_UnitTest.elf"
-end
+# 4. CARGAR FIRMWARE (sin verificación)
+# Si el archivo no existe, Renode mostrará un error y continuará
+sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
+echo "✅ Firmware cargado correctamente"
 
 # 5. LOGS
 logLevel -1 led
