@@ -1,99 +1,14 @@
-# ============================================================
-# SCRIPT COMPLETO PARA STM32F103CBT6
-# LED en PC13, Botón en PB12 con interrupción
-# ============================================================
-
 using sysbus
 
-# ============================================================
-# 1. CREAR MÁQUINA Y CARGAR PLATAFORMA
-# ============================================================
 mach create "stm32f103"
 machine LoadPlatformDescription "D:/Program Files/Renode/platforms/cpus/stm32f103.repl"
 
-# ============================================================
-# 2. CONFIGURAR LED (PC13)
-# ============================================================
-# Crear un LED como un dispositivo
-led: Miscellaneous.LED @ gpioPortC 13
-
-# Conectar el pin 13 del puerto C al LED
+led: Miscellaneous.LED
 gpioPortC.Connect(13, led)
 
-# ============================================================
-# 3. CONFIGURAR BOTÓN (PB12) CON INTERRUPCIÓN
-# ============================================================
-# Crear un botón como un dispositivo
-button: Miscellaneous.Button
+sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
 
-# Conectar el pin 12 del puerto B al botón
-gpioPortB.Connect(12, button)
-
-# Conectar el pin 12 del puerto B al EXTI para interrupciones
-gpioPortB.Connect(12, sysbus.exti.Line[12])
-
-# ============================================================
-# 4. CARGAR FIRMWARE
-# ============================================================
-if File.Exists("../build/Debug/ST_UnitTest.elf") then
-    sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
-    echo "✅ Firmware cargado correctamente"
-else
-    echo "⚠️  Firmware no encontrado"
-end
-
-# ============================================================
-# 5. LOGS PARA DEPURACIÓN
-# ============================================================
 logLevel -1 led
-logLevel -1 button
-
-# ============================================================
-# 6. SIMULACIÓN
-# ============================================================
-echo "======================================================"
-echo "🟢 SIMULACIÓN INICIADA"
-echo "   LED en PC13"
-echo "   Botón en PB12 (con interrupción)"
-echo "======================================================"
-
 start
-
-echo ""
-echo "🟢 Esperando 2 segundos..."
-sleep 2
-
-echo "🟢 Presionando botón..."
-button Press
-echo "   ✅ Botón presionado"
-sleep 1
-
-echo "🟢 Liberando botón..."
-button Release
-echo "   ✅ Botón liberado"
-sleep 1
-
-echo "🟢 Presionando botón nuevamente..."
-button Press
-echo "   ✅ Botón presionado"
-sleep 1
-
-echo "🟢 Liberando botón..."
-button Release
-echo "   ✅ Botón liberado"
-sleep 1
-
-echo "🟢 Presionando botón por última vez..."
-button Press
-sleep 1
-button Release
-
-echo ""
-echo "🟢 Esperando 3 segundos..."
-sleep 3
-
-echo "======================================================"
-echo "🟢 SIMULACIÓN FINALIZADA"
-echo "======================================================"
-
+sleep 5
 quit
