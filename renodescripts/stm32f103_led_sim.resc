@@ -15,7 +15,7 @@ machine LoadPlatformDescription "D:/Program Files/Renode/platforms/cpus/stm32f10
 # 2. CONFIGURAR LED (PC13)
 # ============================================================
 # Crear un LED como un dispositivo
-led: Miscellaneous.LED
+led: Miscellaneous.LED @ gpioPortC 13
 
 # Conectar el pin 13 del puerto C al LED
 gpioPortC.Connect(13, led)
