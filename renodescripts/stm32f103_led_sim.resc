@@ -17,9 +17,9 @@ machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13
 # Definir botón en PB12 con interrupción
 machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
 
-# 4. CARGAR FIRMWARE (sin verificación)
-# Si el archivo no existe, Renode mostrará un error y continuará
-sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
+# 4. CARGAR FIRMWARE (sin comillas)
+# La sintaxis correcta es: sysbus LoadELF ruta/al/archivo.elf
+sysbus LoadELF ../build/Debug/ST_UnitTest.elf
 echo "✅ Firmware cargado correctamente"
 
 # 5. LOGS
