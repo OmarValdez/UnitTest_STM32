@@ -1,19 +1,19 @@
 # ============================================================
 # SCRIPT DEFINITIVO PARA STM32F103CBT6
-# USANDO EXECUTE COMMAND (API DE RENODE)
+# SIN EXECUTE COMMAND - SINTAXIS ESTÁNDAR DE .RESC
 # ============================================================
 
 using sysbus
 
 # 1. CREAR MÁQUINA
-Execute Command mach create "stm32f103"
+mach create "stm32f103"
 
 # 2. CARGAR PLATAFORMA
-Execute Command machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
+machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
 # 3. DEFINIR LED Y BOTÓN
-Execute Command "machine LoadPlatformDescriptionFromString \"led: Miscellaneous.LED @ gpioPortC 13\""
-Execute Command "machine LoadPlatformDescriptionFromString \"button: Miscellaneous.Button @ gpioPortB 12\""
+machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
+machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
 
 # 4. CARGAR FIRMWARE
 $bin?=@../build/Debug/ST_UnitTest.elf
@@ -21,8 +21,8 @@ sysbus LoadELF $bin
 echo "✅ Firmware cargado correctamente"
 
 # 5. LOGS
-Execute Command "logLevel -1 led"
-Execute Command "logLevel -1 button"
+logLevel -1 machine.led
+logLevel -1 machine.button
 
 # 6. SIMULACIÓN
 echo "======================================================"
@@ -31,26 +31,27 @@ echo "   LED en PC13"
 echo "   Botón en PB12 (con interrupción)"
 echo "======================================================"
 
-Execute Command start
+start
 
 echo ""
 echo "🟢 Esperando 2 segundos..."
 sleep 2
 
 echo "🟢 Presionando botón..."
-Execute Command "button Press"
+# Usar el botón directamente
+machine.button Press
 echo "   ✅ Botón presionado"
 sleep 1
 
 echo "🟢 Liberando botón..."
-Execute Command "button Release"
+machine.button Release
 echo "   ✅ Botón liberado"
 sleep 1
 
 echo "🟢 Presionando botón nuevamente..."
-Execute Command "button Press"
+machine.button Press
 sleep 1
-Execute Command "button Release"
+machine.button Release
 
 echo ""
 echo "🟢 Esperando 3 segundos..."
@@ -60,4 +61,4 @@ echo "======================================================"
 echo "🟢 SIMULACIÓN FINALIZADA"
 echo "======================================================"
 
-Execute Command quit
+quit
