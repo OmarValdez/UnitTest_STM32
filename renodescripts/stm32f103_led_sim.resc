@@ -1,64 +1,56 @@
 # ============================================================
 # SCRIPT DEFINITIVO PARA STM32F103CBT6
-# CREANDO DISPOSITIVOS EN SYSBUS
+# USANDO EXECUTE COMMAND (API DE RENODE)
 # ============================================================
 
 using sysbus
 
 # 1. CREAR MÁQUINA
-mach create "stm32f103"
+Execute Command mach create "stm32f103"
 
 # 2. CARGAR PLATAFORMA
-machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
+Execute Command machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
-# ============================================================
-# 3. CREAR DISPOSITIVOS EN SYSBUS
-# ============================================================
-machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
-machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
+# 3. DEFINIR LED Y BOTÓN
+Execute Command "machine LoadPlatformDescriptionFromString \"led: Miscellaneous.LED @ gpioPortC 13\""
+Execute Command "machine LoadPlatformDescriptionFromString \"button: Miscellaneous.Button @ gpioPortB 12\""
 
-# ============================================================
 # 4. CARGAR FIRMWARE
-# ============================================================
 $bin?=@../build/Debug/ST_UnitTest.elf
 sysbus LoadELF $bin
 echo "✅ Firmware cargado correctamente"
 
-# ============================================================
 # 5. LOGS
-# ============================================================
-logLevel -1 led
-logLevel -1 button
+Execute Command "logLevel -1 led"
+Execute Command "logLevel -1 button"
 
-# ============================================================
 # 6. SIMULACIÓN
-# ============================================================
 echo "======================================================"
 echo "🟢 SIMULACIÓN INICIADA"
 echo "   LED en PC13"
 echo "   Botón en PB12 (con interrupción)"
 echo "======================================================"
 
-start
+Execute Command start
 
 echo ""
 echo "🟢 Esperando 2 segundos..."
 sleep 2
 
 echo "🟢 Presionando botón..."
-sysbus.button Press
+Execute Command "button Press"
 echo "   ✅ Botón presionado"
 sleep 1
 
 echo "🟢 Liberando botón..."
-sysbus.button Release
+Execute Command "button Release"
 echo "   ✅ Botón liberado"
 sleep 1
 
 echo "🟢 Presionando botón nuevamente..."
-sysbus.button Press
+Execute Command "button Press"
 sleep 1
-sysbus.button Release
+Execute Command "button Release"
 
 echo ""
 echo "🟢 Esperando 3 segundos..."
@@ -68,4 +60,4 @@ echo "======================================================"
 echo "🟢 SIMULACIÓN FINALIZADA"
 echo "======================================================"
 
-quit
+Execute Command quit
