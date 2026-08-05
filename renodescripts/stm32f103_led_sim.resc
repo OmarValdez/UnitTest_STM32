@@ -1,5 +1,6 @@
 # ============================================================
 # SCRIPT DE PRUEBA - USANDO LoadPlatformDescriptionFromString
+# CON EL TIPO DE GPIO CORRECTO
 # ============================================================
 
 using sysbus
@@ -10,17 +11,20 @@ mach create "stm32f103"
 # 2. CARGAR LA PLATAFORMA BASE (necesaria para la memoria y el CPU)
 machine LoadPlatformDescription "D:/Program Files/Renode/platforms/cpus/stm32f103.repl"
 
-# 3. DEFINIR EL LED USANDO UNA CADENA REPL (como en la documentación)
-# Aquí estamos creando un LED y un GPIO virtual, y los conectamos.
+# 3. DEFINIR EL LED USANDO UNA CADENA REPL
+# Usamos el tipo correcto para el GPIO: GPIOPort.STM32_GPIOPort
 machine LoadPlatformDescriptionFromString """
 led: Miscellaneous.LED @ gpio 0
-gpio: GPIO.GPIO @ sysbus 0x40011000
+gpio: GPIOPort.STM32_GPIOPort @ sysbus 0x40011000
     13 -> led@0
 """
 
 # 4. CARGAR FIRMWARE
 if File.Exists("../build/Debug/ST_UnitTest.elf") then
     sysbus LoadELF "../build/Debug/ST_UnitTest.elf"
+    echo "✅ Firmware cargado correctamente"
+else
+    echo "⚠️  Firmware no encontrado"
 end
 
 # 5. LOGS
@@ -28,6 +32,7 @@ logLevel -1 led
 logLevel -1 gpio
 
 # 6. EJECUCIÓN
+echo "🟢 Iniciando simulación..."
 start
 sleep 5
 quit
