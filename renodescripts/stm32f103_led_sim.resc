@@ -1,6 +1,5 @@
 # ============================================================
-# SCRIPT PARA STM32F103CBT6
-# BASADO EN EL EJEMPLO OFICIAL DE RENODE
+# SCRIPT DEFINITIVO PARA STM32F103CBT6
 # ============================================================
 
 using sysbus
@@ -11,22 +10,21 @@ mach create "stm32f103"
 # 2. CARGAR PLATAFORMA
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
-# 3. DEFINIR LED Y BOTÓN USANDO LoadPlatformDescriptionFromString
-# Definir LED en PC13
-machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
+# ============================================================
+# 3. CREAR DISPOSITIVOS MANUALMENTE EN SYSBUS
+# ============================================================
+# Crear LED en PC13
+led: Miscellaneous.LED @ gpioPortC 13
 
-# Definir botón en PB12 con interrupción
-machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
+# Crear botón en PB12 con interrupción
+button: Miscellaneous.Button @ gpioPortB 12
 
 # ============================================================
-# 4. CARGAR FIRMWARE (usando $bin?=)
+# 4. CARGAR FIRMWARE
 # ============================================================
-# Definir la ruta del firmware
 $bin?=@../build/Debug/ST_UnitTest.elf
-
-# Cargar el firmware
 sysbus LoadELF $bin
-echo "✅ Firmware cargado correctamente desde $bin"
+echo "✅ Firmware cargado correctamente"
 
 # ============================================================
 # 5. LOGS
