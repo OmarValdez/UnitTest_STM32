@@ -49,8 +49,7 @@ echo "🟢 Esperando 2 segundos..."
 sleep 2
 
 # Para el botón, simular pulsación
-gpioPortB.Pin[12] Write true  # Presionar
-gpioPortB.Pin[12] Write false # Liberar
+Execute Command "button Press"
 
 echo ""
 echo "🟢 Esperando 3 segundos..."
