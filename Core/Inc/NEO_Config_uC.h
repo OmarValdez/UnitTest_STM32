@@ -42,7 +42,4 @@ void NEO_GPIO_Read(GPIO_TypeDef *Port, uint16_t Pin, uint8_t *state);
 void NEO_GPIO_Write(GPIO_TypeDef *Port, uint16_t Pin, uint8_t state);
 void NEO_GPIO_Toggle(GPIO_TypeDef *Port, uint16_t Pin);
 
-uint8_t NEO_I2C_Transmit(I2C_HandleTypeDef *i2c_s, uint16_t Address, uint8_t *pDatos, uint16_t CantDatos);
-uint8_t NEO_I2C_Receive (I2C_HandleTypeDef *i2c_s, uint16_t Address, uint8_t *pDatos, uint16_t CantDatos);
-
 #endif /* ST_UNITTEST_CORE_INC_NEO_CONFIG_UC_H_ */

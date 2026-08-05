@@ -1,0 +1,20 @@
+# Archivos de compilación y binarios
+Debug/
+Release/
+build/
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+
+# Metadatos y configuraciones locales de Eclipse / STM32CubeIDE
+.metadata/
+.settings/
+.launch
+*.tmp
+*.bak
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db

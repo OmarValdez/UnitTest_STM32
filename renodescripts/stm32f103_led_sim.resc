@@ -13,52 +13,17 @@ machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
 # 3. DEFINIR LED Y BOTÓN
 machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
-machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
+machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
 
 # 4. CARGAR FIRMWARE
 $bin?=@../build/Debug/ST_UnitTest.elf
 sysbus LoadELF $bin
-echo "✅ Firmware cargado correctamente"
 
 # 5. LOGS
-logLevel -1 machine.led
-logLevel -1 machine.button
+logLevel -1 led
+logLevel -1 button
 
-# 6. SIMULACIÓN
-echo "======================================================"
-echo "🟢 SIMULACIÓN INICIADA"
-echo "   LED en PC13"
-echo "   Botón en PB12 (con interrupción)"
-echo "======================================================"
 
 start
 
-echo ""
-echo "🟢 Esperando 2 segundos..."
-sleep 2
-
-echo "🟢 Presionando botón..."
-# Usar el botón directamente
-machine.button Press
-echo "   ✅ Botón presionado"
-sleep 1
-
-echo "🟢 Liberando botón..."
-machine.button Release
-echo "   ✅ Botón liberado"
-sleep 1
-
-echo "🟢 Presionando botón nuevamente..."
-machine.button Press
-sleep 1
-machine.button Release
-
-echo ""
-echo "🟢 Esperando 3 segundos..."
-sleep 3
-
-echo "======================================================"
-echo "🟢 SIMULACIÓN FINALIZADA"
-echo "======================================================"
-
-quit
+gpioPortB.boton PressAndRelease 

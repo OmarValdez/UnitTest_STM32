@@ -1,6 +1,0 @@
-E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/NEO_Config_uC.c:12:6:NEO_Delay_ms	16	static
-E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/NEO_Config_uC.c:16:6:NEO_GPIO_Read	24	static
-E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/NEO_Config_uC.c:19:6:NEO_GPIO_Write	16	static
-E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/NEO_Config_uC.c:23:6:NEO_GPIO_Toggle	16	static
-E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/NEO_Config_uC.c:27:9:NEO_I2C_Transmit	40	static
-E:/UnitTest_stm32_example/ST_UnitTest/Core/Src/NEO_Config_uC.c:31:9:NEO_I2C_Receive	40	static
