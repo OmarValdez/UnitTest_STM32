@@ -14,11 +14,8 @@ machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 # ============================================================
 # 3. CREAR DISPOSITIVOS EN SYSBUS
 # ============================================================
-# Crear LED en PC13 usando sysbus
-sysbus.led: Miscellaneous.LED @ sysbus.gpioPortC 13
-
-# Crear botón en PB12 usando sysbus
-sysbus.button: Miscellaneous.Button @ sysbus.gpioPortB 12
+machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
+machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
 
 # ============================================================
 # 4. CARGAR FIRMWARE
