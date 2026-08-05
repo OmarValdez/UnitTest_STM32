@@ -13,11 +13,9 @@ machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 # ============================================================
 # 3. CREAR DISPOSITIVOS MANUALMENTE EN SYSBUS
 # ============================================================
-# Crear LED en PC13
-sysbus.led: Miscellaneous.LED @ gpioPortC 13
-
-# Crear botón en PB12 con interrupción
-sysbus.button: Miscellaneous.Button @ gpioPortB 12
+# Definir dispositivos usando REPL string
+machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
+machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortB 12"
 
 # ============================================================
 # 4. CARGAR FIRMWARE
@@ -29,8 +27,8 @@ echo "✅ Firmware cargado correctamente"
 # ============================================================
 # 5. LOGS
 # ============================================================
-logLevel -1 sysbus.led
-logLevel -1 sysbus.button
+logLevel -1 led
+logLevel -1 button
 
 # ============================================================
 # 6. SIMULACIÓN
@@ -48,19 +46,19 @@ echo "🟢 Esperando 2 segundos..."
 sleep 2
 
 echo "🟢 Presionando botón..."
-sysbus.button Press
+button Press
 echo "   ✅ Botón presionado"
 sleep 1
 
 echo "🟢 Liberando botón..."
-sysbus.button Release
+button Release
 echo "   ✅ Botón liberado"
 sleep 1
 
 echo "🟢 Presionando botón nuevamente..."
-sysbus.button Press
+button Press
 sleep 1
-sysbus.button Release
+button Release
 
 echo ""
 echo "🟢 Esperando 3 segundos..."
