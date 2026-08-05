@@ -1,6 +1,6 @@
 # ============================================================
 # SCRIPT DEFINITIVO PARA STM32F103CBT6
-# Usando el GPIO existente en la plataforma
+# VALIDADO PARA RENODE 1.16.1
 # ============================================================
 
 using sysbus
@@ -10,26 +10,16 @@ mach create "stm32f103"
 machine LoadPlatformDescription "D:/Program Files/Renode/platforms/cpus/stm32f103.repl"
 
 # ============================================================
-# 2. CONFIGURAR LED (PC13) - USANDO EL GPIO EXISTENTE
+# 2. CONFIGURAR LED (PC13) - USANDO LA SINTAXIS CORRECTA
 # ============================================================
-# Crear el LED como un dispositivo
-led: Miscellaneous.LED
-
-# Conectar el LED al pin 13 del puerto C existente
-# La sintaxis correcta en .resc es: gpioPortC.Pin[13] -> led
-gpioPortC.Pin[13] -> led
+# Primero, crear el LED como un dispositivo
+led: Miscellaneous.LED @ gpioPortC 13
 
 # ============================================================
 # 3. CONFIGURAR BOTÓN (PB12) CON INTERRUPCIÓN
 # ============================================================
 # Crear el botón como un dispositivo
-button: Miscellaneous.Button
-
-# Conectar el botón al pin 12 del puerto B existente
-gpioPortB.Pin[12] -> button
-
-# Conectar el botón al EXTI para interrupciones
-gpioPortB.Pin[12] -> sysbus.exti.Line[12]
+button: Miscellaneous.Button @ gpioPortB 12
 
 # ============================================================
 # 4. CARGAR FIRMWARE
