@@ -14,16 +14,33 @@ machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 # 3. DEFINIR LED Y BOTÓN
 machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
 machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
+:machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortC 13 { IRQ -> gpioPortC@13 }"
 
 # 4. CARGAR FIRMWARE
 $bin?=@../build/Debug/ST_UnitTest.elf
+:$bin?=@https://dl.antmicro.com/projects/renode/zephyr-stm32f103-button.elf-s_276760-1bf32c99bbb3c01d81e13ca68118eaf08b2a815f
 sysbus LoadELF $bin
 
 # 5. LOGS
-logLevel -1 led
-logLevel -1 button
+logLevel -1 gpioPortC.led
+logLevel -1 gpioPortB.boton
 
+:cpu DisableExecutionTracing
+cpu LogFunctionNames true
+sysbus FindSymbolAt `sysbus.cpu PC`
+
+sysbus LogAllPeripheralsAccess true
+:sysbus LogPeripheralAccess gpioPortC True
+:sysbus LogPeripheralAccess gpioPortB True
 
 start
 
-gpioPortB.boton PressAndRelease 
+sysbus FindSymbolAt `sysbus.cpu PC`
+gpioPortB.boton PressAndRelease
+gpioPortB.boton PressAndRelease
+sysbus FindSymbolAt `sysbus.cpu PC`
+gpioPortB.boton PressAndRelease
+gpioPortB.boton PressAndRelease
+sysbus FindSymbolAt `sysbus.cpu PC`
+
+quit
