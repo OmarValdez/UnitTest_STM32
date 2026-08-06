@@ -10,8 +10,8 @@ dir /s build\test\out\*.gcda
 echo ===== Creando directorio de reportes =====
 if not exist build\coverage mkdir build\coverage
 
-echo ===== Generando reporte HTML =====
-D:\msys64\ucrt64\bin\gcovr.exe --root . --object-directory build\test\out\test_led_logic --gcov-executable "D:\msys64\ucrt64\bin\gcov.exe" --html --html-details -o build\coverage\index.html
+echo ===== Ejecutando gcovr desde MSYS2 =====
+D:\msys64\usr\bin\bash.exe -c "cd '%CD%' && export PATH=/ucrt64/bin:$PATH && gcovr --root . --object-directory build/test/out/test_led_logic --gcov-executable gcov --html --html-details -o build/coverage/index.html"
 
 if %ERRORLEVEL% NEQ 0 (
     echo ❌ Error al generar reporte HTML
@@ -19,7 +19,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo ===== Generando reporte XML =====
-D:\msys64\ucrt64\bin\gcovr.exe --root . --object-directory build\test\out\test_led_logic --gcov-executable "D:\msys64\ucrt64\bin\gcov.exe" --xml -o build\coverage\coverage.xml
+D:\msys64\usr\bin\bash.exe -c "cd '%CD%' && export PATH=/ucrt64/bin:$PATH && gcovr --root . --object-directory build/test/out/test_led_logic --gcov-executable gcov --xml -o build/coverage/coverage.xml"
 
 if %ERRORLEVEL% NEQ 0 (
     echo ❌ Error al generar reporte XML
