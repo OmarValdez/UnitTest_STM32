@@ -10,17 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Actualizar repositorio') {
-            steps {
-                bat '''
-                    echo "===== Actualizando repositorio ====="
-                    git fetch --all
-                    git reset --hard origin/main
-                    git clean -fd
-                '''
-            }
-        }
-
         stage('Preparar entorno') {
             steps {
                 echo '===== Verificando herramientas ====='
@@ -141,7 +130,7 @@ pipeline {
                         type renode_output.log
                         
                         echo "===== Verificando logs del LED ====="
-                        findstr "SIMULACIàN FINALIZADA" renode_output.log || echo "⚠️  No se termino la simulacion"
+                        findstr "SIMULACION FINALIZADA" renode_output.log || echo "⚠️  No se termino la simulacion"
                     '''
                 }
             }

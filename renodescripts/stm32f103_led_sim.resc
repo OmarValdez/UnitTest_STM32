@@ -63,7 +63,7 @@ gpioPortC.led State
 
 echo ""
 echo "======================================================"
-echo "🟢 SIMULACIÓN FINALIZADA"
+echo "🟢 SIMULACION FINALIZADA"
 echo "======================================================"
 
 sysbus FindSymbolAt `sysbus.cpu PC`
