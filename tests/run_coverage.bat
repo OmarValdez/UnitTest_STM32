@@ -1,6 +1,8 @@
 @echo off
 echo ===== Ejecutando pruebas con cobertura =====
-bundle exec ceedling test:all --project project.yml
+call bundle exec ceedling test:all --project project.yml
+
+echo ===== Ceedling finalizado. Continuando... =====
 
 echo ===== Verificando archivos .gcda =====
 dir /s build\test\out\*.gcda
