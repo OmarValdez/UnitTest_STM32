@@ -26,8 +26,7 @@ logLevel -1 gpioPortC.led
 logLevel -1 gpioPortB.boton
 
 :cpu DisableExecutionTracing
-cpu LogFunctionNames true
-sysbus FindSymbolAt `sysbus.cpu PC`
+:cpu LogFunctionNames true
 
 sysbus LogAllPeripheralsAccess true
 :sysbus LogPeripheralAccess gpioPortC True
