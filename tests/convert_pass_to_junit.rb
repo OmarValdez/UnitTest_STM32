@@ -1,141 +1,53 @@
 #!/usr/bin/env ruby
 # ============================================================
-# CONVERTIR EL ARCHIVO .pass DE CEEDLING A JUNIT XML
-# VERSIÓN MEJORADA - MANEJA DIFERENTES FORMATOS
+# CONVERTIR .pass A JUNIT XML - VERSIÓN SIMPLIFICADA
 # ============================================================
 
-require 'yaml'
-require 'json'
-
-# ============================================================
-# CONFIGURACIÓN
-# ============================================================
 PASS_FILE = 'build/test/results/test_led_logic.pass'
 XML_FILE = 'build/test/results/junit_report.xml'
 
-# ============================================================
-# FUNCIÓN PARA PARSEAR EL .pass (FLEXIBLE)
-# ============================================================
-def parse_pass_file(file_path)
-  content = File.read(file_path)
-  
-  # Intentar parsear como YAML
-  begin
-    data = YAML.load(content)
-    return data if data && data.is_a?(Hash)
-  rescue
-    # Si falla, intentar con formato alternativo
-  end
-  
-  # Si no es YAML, intentar con JSON
-  begin
-    data = JSON.parse(content)
-    return data if data && data.is_a?(Hash)
-  rescue
-    # Si falla, intentar parseo manual
-  end
-  
-  # Si todo falla, intentar parseo manual de campos clave
-  data = {}
-  data['successes'] = []
-  data['failures'] = []
-  data['ignores'] = []
-  data['counts'] = {}
-  data['time'] = 0
-  data['source'] = {}
-  
-  # Buscar campos comunes
-  if content =~ /:successes:\s*-\s*:test:\s*(.*?)\s*:line:\s*(\d+)/m
-    # Formato YAML simple
-    content.scan(/:successes:\s*-\s*:test:\s*(.*?)\s*:line:\s*(\d+)/m) do |match|
-      data['successes'] << { 'test' => match[0].strip, 'line' => match[1].to_i }
-    end
-    content.scan(/:failures:\s*-\s*:test:\s*(.*?)\s*:line:\s*(\d+)/m) do |match|
-      data['failures'] << { 'test' => match[0].strip, 'line' => match[1].to_i }
-    end
-    content.scan(/:ignores:\s*-\s*:test:\s*(.*?)\s*:line:\s*(\d+)/m) do |match|
-      data['ignores'] << { 'test' => match[0].strip, 'line' => match[1].to_i }
-    end
-    content =~ /:total:\s*(\d+)/
-    data['counts']['total'] = $1.to_i if $1
-    content =~ /:passed:\s*(\d+)/
-    data['counts']['passed'] = $1.to_i if $1
-    content =~ /:failed:\s*(\d+)/
-    data['counts']['failed'] = $1.to_i if $1
-    content =~ /:ignored:\s*(\d+)/
-    data['counts']['ignored'] = $1.to_i if $1
-    content =~ /:time:\s*([\d.]+)/
-    data['time'] = $1.to_f if $1
-  end
-  
-  data
-end
-
-# ============================================================
-# FUNCIÓN PRINCIPAL
-# ============================================================
 def convert_pass_to_junit(pass_file, xml_file)
-  # Verificar que el archivo .pass existe
   unless File.exist?(pass_file)
-    puts "⚠️  Archivo .pass no encontrado: #{pass_file}"
+    puts "⚠️  Archivo .pass no encontrado"
+    generate_empty_xml(xml_file)
     return false
   end
 
-  # Leer y parsear el archivo
-  data = parse_pass_file(pass_file)
+  puts "📖 Leyendo archivo: #{pass_file}"
+  content = File.read(pass_file)
   
-  # Verificar que los datos sean válidos
-  unless data && data.is_a?(Hash)
-    puts "⚠️  No se pudo parsear el archivo .pass"
-    return false
-  end
-
-  # Extraer información (con valores por defecto)
-  successes = data['successes'] || []
-  failures = data['failures'] || []
-  ignores = data['ignores'] || []
-  
-  # Si successes es un hash, convertirlo a array
-  if successes.is_a?(Hash)
-    successes = [successes]
-  end
-  
-  # Si failures es un hash, convertirlo a array
-  if failures.is_a?(Hash)
-    failures = [failures]
-  end
-  
-  # Si ignores es un hash, convertirlo a array
-  if ignores.is_a?(Hash)
-    ignores = [ignores]
-  end
-
-  # Contar pruebas
-  total = successes.size + failures.size + ignores.size
-  passed = successes.size
-  failed = failures.size
-  ignored = ignores.size
-
-  # Si no se encontraron pruebas, usar los counts del archivo
-  if total == 0
-    total = data.dig('counts', 'total') || 0
-    passed = data.dig('counts', 'passed') || 0
-    failed = data.dig('counts', 'failed') || 0
-    ignored = data.dig('counts', 'ignored') || 0
-  end
-
-  # Obtener el nombre del archivo de prueba
-  source_file = data.dig('source', 'basename') || 'unknown'
+  # Extraer el nombre del archivo de prueba (source)
+  source_match = content.match(/basename:\s*(.*)/)
+  source_file = source_match ? source_match[1].strip : 'unknown'
   classname = File.basename(source_file, '.*')
-  if classname.nil? || classname.empty?
-    classname = 'test_led_logic'
+  
+  # Extraer información de las pruebas
+  tests = []
+  
+  # Buscar todas las pruebas exitosas
+  content.scan(/- :test: (.*?)\n\s+:line: (\d+)/) do |name, line|
+    tests << { name: name.strip, line: line.to_i, status: 'pass' }
   end
+  
+  # Buscar pruebas fallidas (si existen)
+  content.scan(/- :test: (.*?)\n\s+:line: (\d+)\n\s+:message: (.*?)\n/m) do |name, line, msg|
+    tests << { name: name.strip, line: line.to_i, status: 'fail', message: msg.strip }
+  end
+  
+  # Extraer conteos
+  total_match = content.match(/:total:\s*(\d+)/)
+  passed_match = content.match(/:passed:\s*(\d+)/)
+  failed_match = content.match(/:failed:\s*(\d+)/)
+  ignored_match = content.match(/:ignored:\s*(\d+)/)
+  time_match = content.match(/:time:\s*([\d.]+)/)
+  
+  total = total_match ? total_match[1].to_i : tests.size
+  passed = passed_match ? passed_match[1].to_i : tests.count { |t| t[:status] == 'pass' }
+  failed = failed_match ? failed_match[1].to_i : tests.count { |t| t[:status] == 'fail' }
+  ignored = ignored_match ? ignored_match[1].to_i : 0
+  time = time_match ? time_match[1].to_f : 0
 
-  # Tiempo de ejecución
-  time = data['time'] || 0
-
-  puts "📊 Resultados encontrados:"
-  puts "   Total: #{total}, Pasadas: #{passed}, Fallidas: #{failed}, Ignoradas: #{ignored}"
+  puts "📊 Resultados: Total=#{total}, Pasadas=#{passed}, Fallidas=#{failed}, Ignoradas=#{ignored}"
 
   # ============================================================
   # GENERAR XML
@@ -145,46 +57,15 @@ def convert_pass_to_junit(pass_file, xml_file)
     f.puts '<testsuites>'
     f.puts "  <testsuite name=\"#{classname}\" tests=\"#{total}\" failures=\"#{failed}\" errors=\"0\" skipped=\"#{ignored}\" time=\"#{time}\">"
 
-    # Agregar pruebas exitosas
-    successes.each do |test|
-      if test.is_a?(Hash)
-        name = test['test'] || test[:test] || 'unknown'
-        line = test['line'] || test[:line] || 0
+    # Agregar cada prueba
+    tests.each do |test|
+      if test[:status] == 'pass'
+        f.puts "    <testcase name=\"#{test[:name]}\" classname=\"#{classname}\" time=\"0.001\" line=\"#{test[:line]}\"/>"
       else
-        name = test.to_s
-        line = 0
+        f.puts "    <testcase name=\"#{test[:name]}\" classname=\"#{classname}\" time=\"0.001\" line=\"#{test[:line]}\">"
+        f.puts "      <failure message=\"#{test[:message] || 'Test failed'}\"/>"
+        f.puts "    </testcase>"
       end
-      f.puts "    <testcase name=\"#{name}\" classname=\"#{classname}\" time=\"0.001\" line=\"#{line}\"/>"
-    end
-
-    # Agregar pruebas fallidas
-    failures.each do |test|
-      if test.is_a?(Hash)
-        name = test['test'] || test[:test] || 'unknown'
-        line = test['line'] || test[:line] || 0
-        message = test['message'] || test[:message] || 'Test failed'
-      else
-        name = test.to_s
-        line = 0
-        message = 'Test failed'
-      end
-      f.puts "    <testcase name=\"#{name}\" classname=\"#{classname}\" time=\"0.001\" line=\"#{line}\">"
-      f.puts "      <failure message=\"#{message}\"/>"
-      f.puts "    </testcase>"
-    end
-
-    # Agregar pruebas ignoradas
-    ignores.each do |test|
-      if test.is_a?(Hash)
-        name = test['test'] || test[:test] || 'unknown'
-        line = test['line'] || test[:line] || 0
-      else
-        name = test.to_s
-        line = 0
-      end
-      f.puts "    <testcase name=\"#{name}\" classname=\"#{classname}\" time=\"0.001\" line=\"#{line}\">"
-      f.puts "      <skipped/>"
-      f.puts "    </testcase>"
     end
 
     f.puts '  </testsuite>'
@@ -195,18 +76,21 @@ def convert_pass_to_junit(pass_file, xml_file)
   true
 end
 
+def generate_empty_xml(xml_file)
+  File.open(xml_file, 'w') do |f|
+    f.puts '<?xml version="1.0" encoding="UTF-8"?>'
+    f.puts '<testsuites>'
+    f.puts '  <testsuite name="unknown" tests="0" failures="0" errors="0" skipped="0" time="0">'
+    f.puts '  </testsuite>'
+    f.puts '</testsuites>'
+  end
+end
+
 # ============================================================
 # EJECUCIÓN
 # ============================================================
 if __FILE__ == $0
   puts "===== Convertiendo .pass a JUnit XML ====="
   success = convert_pass_to_junit(PASS_FILE, XML_FILE)
-  
-  if success
-    puts "✅ Conversión completada exitosamente"
-    exit 0
-  else
-    puts "❌ Error en la conversión"
-    exit 1
-  end
+  exit(success ? 0 : 1)
 end
