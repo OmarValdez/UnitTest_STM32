@@ -1,21 +1,16 @@
+# ============================================================
+# Proyect
+# ============================================================
 :project:
   :build_root: build
   :release_build: FALSE
   :test_file_prefix: test_
 
 # ============================================================
-# PLUGINS (SOLO LOS QUE EXISTEN)
-# ============================================================
-:plugins:
-  :enabled:
-    - xml_tests_report   # ← Genera reportes XML (alternativo a junit)
-
-# ============================================================
 # RESULTADOS DE PRUEBAS
 # ============================================================
 :test_results:
   :enabled: true
-  :file_name_format: "junit_%s.xml"
   :include_failure_messages: true
 
 # ============================================================

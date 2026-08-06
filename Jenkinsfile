@@ -138,13 +138,47 @@ pipeline {
 
         stage('Publicar resultados') {
             steps {
-                // Publicar resultados JUnit (desde Ceedling)
+                echo '===== Publicando resultados ====='
+                
+                // ============================================================
+                // CONVERTIR .pass A JUNIT XML (USANDO SCRIPT EN RUBY)
+                // ============================================================
+                bat '''
+                    echo "===== Convirtiendo resultados a JUnit XML ====="
+                    cd tests
+                    
+                    echo "===== Verificando archivo .pass ====="
+                    if exist build\\test\\results\\test_led_logic.pass (
+                        echo "✅ Archivo .pass encontrado"
+                        
+                        echo "===== Ejecutando script de conversión ====="
+                        ruby convert_pass_to_junit.rb
+                        
+                        if %ERRORLEVEL% NEQ 0 (
+                            echo "⚠️  Error en la conversión, generando reporte por defecto"
+                            # Generar XML por defecto si falla
+                            if not exist build\\test\\results (
+                                mkdir build\\test\\results
+                            )
+                            (
+                                echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>"
+                                echo "<testsuites>"
+                                echo "  <testsuite name=\\"Ceedling\\" tests=\\"0\\" failures=\\"0\\" errors=\\"0\\" skipped=\\"0\\">"
+                                echo "  </testsuite>"
+                                echo "</testsuites>"
+                            ) > build\\test\\results\\junit_report.xml
+                        )
+                    ) else (
+                        echo "⚠️  Archivo .pass no encontrado"
+                    )
+                '''
+                
+                // Publicar resultados JUnit
                 junit testResults: 'tests/build/test/results/*.xml', allowEmptyResults: true
-                // Archivar logs de las pruebas
+                
+                // Archivar artefactos
                 archiveArtifacts artifacts: 'tests/build/test/out/**/*.log', allowEmptyArchive: true
-                // Archivar logs de Renode
                 archiveArtifacts artifacts: 'renodescripts/renode_output.log', allowEmptyArchive: true
-                // Archivar el firmware compilado
                 archiveArtifacts artifacts: 'build/Debug/*.elf', allowEmptyArchive: true
                 archiveArtifacts artifacts: 'build/Debug/*.bin', allowEmptyArchive: true
             }
