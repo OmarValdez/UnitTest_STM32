@@ -194,10 +194,9 @@ pipeline {
                 // PUBLICAR COBERTURA (Coverage Plugin)
                 // ============================================================
                 recordCoverage(
-                    tools: [
-                        cobertura: [
-                            pattern: 'tests/build/coverage/coverage.xml'
-                        ]
+                    tool: [
+                        $class: 'CoberturaParser',
+                        pattern: 'tests/build/coverage/coverage.xml'
                     ]
                 )
                 
