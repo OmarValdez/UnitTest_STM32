@@ -141,7 +141,7 @@ pipeline {
                         type renode_output.log
                         
                         echo "===== Verificando logs del LED ====="
-                        findstr "Error_Handler" renode_output.log || echo "⚠️  No se encontraron logs del LED"
+                        findstr "SIMULACIàN FINALIZADA" renode_output.log || echo "⚠️  No se termino la simulacion"
                     '''
                 }
             }

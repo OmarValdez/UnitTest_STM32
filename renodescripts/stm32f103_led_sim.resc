@@ -27,11 +27,6 @@ logLevel -1 gpioPortB.boton
 sysbus LogAllPeripheralsAccess true
 
 # 6. SIMULACIÓN CON PRUEBAS
-echo "======================================================"
-echo "🟢 SIMULACIÓN INICIADA"
-echo "   LED en PC13"
-echo "   Botón en PB12 (con interrupción)"
-echo "======================================================"
 
 start
 sysbus FindSymbolAt `sysbus.cpu PC`
