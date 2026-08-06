@@ -34,26 +34,33 @@ echo "   Botón en PB12 (con interrupción)"
 echo "======================================================"
 
 start
-
+sysbus FindSymbolAt `sysbus.cpu PC`
 # Esperar a que el firmware se estabilice
 sleep 1
 
-echo ""
-echo "🟢 Realizando pruebas..."
-
 # Secuencia de pruebas
+sysbus FindSymbolAt `sysbus.cpu PC`
 echo "🟢 Presionando botón 1..."
 gpioPortB.boton PressAndRelease
+echo "🟢 Estado del LED:"
+gpioPortC.led State
 sleep 0.5
 
+sysbus FindSymbolAt `sysbus.cpu PC`
 echo "🟢 Presionando botón 2..."
 gpioPortB.boton PressAndRelease
+echo "🟢 Estado del LED:"
+gpioPortC.led State
 sleep 0.5
 
+sysbus FindSymbolAt `sysbus.cpu PC`
 echo "🟢 Presionando botón 3..."
 gpioPortB.boton PressAndRelease
+echo "🟢 Estado del LED:"
+gpioPortC.led State
 sleep 0.5
 
+sysbus FindSymbolAt `sysbus.cpu PC`
 # Verificar estado final del LED
 echo ""
 echo "🟢 Estado final del LED:"
@@ -63,5 +70,7 @@ echo ""
 echo "======================================================"
 echo "🟢 SIMULACIÓN FINALIZADA"
 echo "======================================================"
+
+sysbus FindSymbolAt `sysbus.cpu PC`
 
 quit

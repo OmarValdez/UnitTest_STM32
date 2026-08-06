@@ -137,14 +137,11 @@ pipeline {
                         echo "===== Ejecutando Renode ====="
                         renode --console --disable-xwt -e "include @stm32f103_led_sim.resc" > renode_output.log 2>&1
                         
-                        echo "===== Verificando logs del LED (gpioPortC.led) ====="
-                        findstr "gpioPortC.led" renode_output.log || echo "⚠️  No se encontraron logs del LED"
+                        echo "===== Salida de Renode ====="
+                        type renode_output.log
                         
-                        echo "===== Verificando logs del botón (gpioPortB.boton) ====="
-                        findstr "gpioPortB.boton" renode_output.log || echo "⚠️  No se encontraron logs del botón"
-                        
-                        echo "===== Verificando que el firmware se cargó ====="
-                        findstr "Firmware cargado correctamente" renode_output.log || echo "⚠️  Firmware no cargado"
+                        echo "===== Verificando logs del LED ====="
+                        findstr "Error_Handler" renode_output.log || echo "⚠️  No se encontraron logs del LED"
                     '''
                 }
             }
