@@ -138,11 +138,15 @@ pipeline {
 
         stage('Publicar resultados') {
             steps {
-                echo '===== Publicando resultados ====='
+                // Publicar resultados JUnit (desde Ceedling)
                 junit testResults: 'tests/build/test/results/*.xml', allowEmptyResults: true
+                // Archivar logs de las pruebas
                 archiveArtifacts artifacts: 'tests/build/test/out/**/*.log', allowEmptyArchive: true
+                // Archivar logs de Renode
                 archiveArtifacts artifacts: 'renodescripts/renode_output.log', allowEmptyArchive: true
+                // Archivar el firmware compilado
                 archiveArtifacts artifacts: 'build/Debug/*.elf', allowEmptyArchive: true
+                archiveArtifacts artifacts: 'build/Debug/*.bin', allowEmptyArchive: true
             }
         }
     }

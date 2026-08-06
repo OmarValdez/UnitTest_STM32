@@ -3,6 +3,11 @@
   :release_build: FALSE
   :test_file_prefix: test_
 
+:test_results:
+  :enabled: true
+  :file_name_format: "junit_%s.xml"   # Formato del archivo
+  :include_failure_messages: true
+
 :paths:
   :test:
     - +:test/

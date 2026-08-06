@@ -19,4 +19,20 @@ build/
 .DS_Store
 Thumbs.db
 
-renodescrips/*.log
+# Archivos de logs
+*.log
+logs/
+renodescripts/*.log
+renode_output.log
+*.tmp
+*.cache
+
+# ARCHIVOS DE PRUEBAS (Ceedling)
+tests/build/
+tests/test/results/
+
+# ARCHIVOS DE IDE
+.vscode/
+.idea/
+*.swp
+*.swo

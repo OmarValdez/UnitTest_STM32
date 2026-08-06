@@ -19,6 +19,9 @@ $bin?=@../build/Debug/ST_UnitTest.elf
 sysbus LoadELF $bin
 echo "✅ Firmware cargado correctamente"
 
+# Detectar el Error_Handler
+cpu AddHook `sysbus GetSymbolAddress "Error_Handler"` "cpu.ErrorLog('⛔ Error_Handler alcanzado en @ {0}', monitor.Machine.ElapsedVirtualTime.TimeElapsed)"
+
 # 5. LOGS PARA DEPURACIÓN
 logLevel -1 gpioPortC.led
 logLevel -1 gpioPortB.boton
@@ -29,7 +32,8 @@ sysbus LogAllPeripheralsAccess true
 # 6. SIMULACIÓN CON PRUEBAS
 
 start
-sysbus FindSymbolAt `sysbus.cpu PC`
+
+:sysbus FindSymbolAt `sysbus.cpu PC`
 # Esperar a que el firmware se estabilice
 sleep 1
 
