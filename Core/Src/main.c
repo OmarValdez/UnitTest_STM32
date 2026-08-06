@@ -104,6 +104,7 @@ int main(void)
 	while(1){
 		NEO_GPIO_Toggle(LED1_PORT, LED1_PIN);
 		NEO_Delay_ms(delay_duration);
+    // pequeña modificacion
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
