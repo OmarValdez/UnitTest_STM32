@@ -144,27 +144,11 @@ pipeline {
                         echo "===== Ejecutando pruebas con cobertura ====="
                         bundle exec ceedling test:all --project project.yml
                         
-                        echo "===== Verificando archivos .gcda y .gcno ====="
-                        dir /s *.gcda *.gcno 2>nul || echo "⚠️  No se encontraron archivos de cobertura"
+                        echo "===== Generando reporte HTML ====="
+                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --object-directory build\\test\\out\\test_led_logic --gcov-executable "D:\\msys64\\ucrt64\\bin\\gcov.exe" --html --html-details -o build/coverage/index.html
                         
-                        echo "===== Generando reporte HTML con gcovr (desde MSYS2) ====="
-                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --html --html-details -o build/coverage/index.html
-                        
-                        echo "===== Generando reporte XML con gcovr (desde MSYS2) ====="
-                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --xml -o build/coverage/coverage.xml
-                        
-                        echo "===== Verificando reportes ====="
-                        if exist build\\coverage\\index.html (
-                            echo "✅ Reporte HTML generado"
-                        ) else (
-                            echo "⚠️  No se generó reporte HTML"
-                        )
-                        
-                        if exist build\\coverage\\coverage.xml (
-                            echo "✅ Reporte XML generado"
-                        ) else (
-                            echo "⚠️  No se generó reporte XML"
-                        )
+                        echo "===== Generando reporte XML ====="
+                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --object-directory build\\test\\out\\test_led_logic --gcov-executable "D:\\msys64\\ucrt64\\bin\\gcov.exe" --xml -o build/coverage/coverage.xml
                     '''
                 }
             }
