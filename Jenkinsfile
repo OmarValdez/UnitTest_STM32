@@ -191,12 +191,15 @@ pipeline {
                 junit testResults: 'tests/build/test/results/junit_report.xml', allowEmptyResults: false
 
                 // ============================================================
-                // PUBLICAR COBERTURA (COBERTURA PLUGIN)
+                // PUBLICAR COBERTURA (Coverage Plugin)
                 // ============================================================
-                cobertura coberturaReportFile: 'tests/build/coverage/coverage.xml',
-                        failNoReports: false,
-                        lineCoverageTargets: '70, 0, 0',
-                        conditionalCoverageTargets: '70, 0, 0'
+                recordCoverage(
+                    tools: [
+                        cobertura: [
+                            pattern: 'tests/build/coverage/coverage.xml'
+                        ]
+                    ]
+                )
                 
                 // ============================================================
                 // PUBLICAR REPORTE HTML DE COBERTURA
