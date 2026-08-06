@@ -141,7 +141,7 @@ pipeline {
                 echo '===== Publicando resultados ====='
                 
                 // ============================================================
-                // CONVERTIR .pass A JUNIT XML (USANDO SCRIPT EN RUBY)
+                // CONVERTIR .pass A JUNIT XML
                 // ============================================================
                 bat '''
                     echo "===== Convirtiendo resultados a JUnit XML ====="
@@ -150,37 +150,50 @@ pipeline {
                     echo "===== Verificando archivo .pass ====="
                     if exist build\\test\\results\\test_led_logic.pass (
                         echo "✅ Archivo .pass encontrado"
-                        
                         echo "===== Ejecutando script de conversión ====="
                         ruby convert_pass_to_junit.rb
-                        
-                        if %ERRORLEVEL% NEQ 0 (
-                            echo "⚠️  Error en la conversión, generando reporte por defecto"
-                            # Generar XML por defecto si falla
-                            if not exist build\\test\\results (
-                                mkdir build\\test\\results
-                            )
-                            (
-                                echo "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?>"
-                                echo "<testsuites>"
-                                echo "  <testsuite name=\\"Ceedling\\" tests=\\"0\\" failures=\\"0\\" errors=\\"0\\" skipped=\\"0\\">"
-                                echo "  </testsuite>"
-                                echo "</testsuites>"
-                            ) > build\\test\\results\\junit_report.xml
-                        )
                     ) else (
                         echo "⚠️  Archivo .pass no encontrado"
                     )
                 '''
                 
-                // Publicar resultados JUnit
+                // ============================================================
+                // PUBLICAR RESULTADOS JUNIT
+                // ============================================================
                 junit testResults: 'tests/build/test/results/*.xml', allowEmptyResults: true
                 
-                // Archivar artefactos
-                archiveArtifacts artifacts: 'tests/build/test/out/**/*.log', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'renodescripts/renode_output.log', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'build/Debug/*.elf', allowEmptyArchive: true
-                archiveArtifacts artifacts: 'build/Debug/*.bin', allowEmptyArchive: true
+                // ============================================================
+                // ARCHIVAR ARTEFACTOS (SOLO LO QUE EXISTE)
+                // ============================================================
+                // Logs de las pruebas (si existen)
+                archiveArtifacts artifacts: 'tests/build/test/out/**/*.log', allowEmptyArchive: true, fingerprint: true
+                
+                // Log de Renode
+                archiveArtifacts artifacts: 'renodescripts/renode_output.log', allowEmptyArchive: true, fingerprint: true
+                
+                // Firmware (.elf)
+                archiveArtifacts artifacts: 'build/Debug/*.elf', allowEmptyArchive: true, fingerprint: true
+                
+                // ============================================================
+                // GENERAR .bin SI NO EXISTE (opcional)
+                // ============================================================
+                bat '''
+                    echo "===== Verificando .bin ====="
+                    if not exist build\\Debug\\ST_UnitTest.bin (
+                        echo "⚠️  .bin no encontrado, generando..."
+                        if exist build\\Debug\\ST_UnitTest.elf (
+                            arm-none-eabi-objcopy -O binary build\\Debug\\ST_UnitTest.elf build\\Debug\\ST_UnitTest.bin
+                        )
+                    )
+                    if exist build\\Debug\\ST_UnitTest.bin (
+                        echo "✅ .bin generado"
+                    ) else (
+                        echo "⚠️  No se pudo generar .bin"
+                    )
+                '''
+                
+                // Archivar .bin (si existe)
+                archiveArtifacts artifacts: 'build/Debug/*.bin', allowEmptyArchive: true, fingerprint: true
             }
         }
     }
