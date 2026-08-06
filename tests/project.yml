@@ -3,11 +3,25 @@
   :release_build: FALSE
   :test_file_prefix: test_
 
+# ============================================================
+# PLUGINS
+# ============================================================
+:plugins:
+  :enabled:
+    - junit
+    - stdout_pretty_tests
+
+# ============================================================
+# RESULTADOS DE PRUEBAS
+# ============================================================
 :test_results:
   :enabled: true
-  :file_name_format: "junit_%s.xml"   # Formato del archivo
+  :file_name_format: "junit_%s.xml"
   :include_failure_messages: true
 
+# ============================================================
+# RUTAS
+# ============================================================
 :paths:
   :test:
     - +:test/
@@ -37,8 +51,11 @@
 
 # === HABILITAR GENERACIÓN AUTOMÁTICA DE RUNNERS ===
 :test_runner:
-  :enabled: true   # ← Cambiado a true
+  :enabled: true
 
+# ============================================================
+# HERRAMIENTAS
+# ============================================================
 :tools:
   :test_compiler:
     :executable: gcc
