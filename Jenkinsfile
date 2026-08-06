@@ -142,13 +142,7 @@ pipeline {
                 dir('tests') {
                     bat '''
                         echo "===== Ejecutando pruebas con cobertura ====="
-                        bundle exec ceedling test:all --project project.yml
-                        
-                        echo "===== Generando reporte HTML ====="
-                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --object-directory build\\test\\out\\test_led_logic --gcov-executable "D:\\msys64\\ucrt64\\bin\\gcov.exe" --html --html-details -o build/coverage/index.html
-                        
-                        echo "===== Generando reporte XML ====="
-                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --object-directory build\\test\\out\\test_led_logic --gcov-executable "D:\\msys64\\ucrt64\\bin\\gcov.exe" --xml -o build/coverage/coverage.xml
+                        run_coverage.bat
                     '''
                 }
             }
