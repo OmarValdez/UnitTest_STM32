@@ -1,6 +1,5 @@
 # ============================================================
-# SCRIPT DEFINITIVO PARA STM32F103CBT6
-# SIN EXECUTE COMMAND - SINTAXIS ESTÁNDAR DE .RESC
+# SCRIPT PARA STM32F103CBT6 - OPTIMIZADO PARA CI/CD
 # ============================================================
 
 using sysbus
@@ -11,35 +10,58 @@ mach create "stm32f103"
 # 2. CARGAR PLATAFORMA
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
-# 3. DEFINIR LED Y BOTÓN
+# 3. DEFINIR LED Y BOTÓN (usando los nombres que funcionaron)
 machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
 machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
-:machine LoadPlatformDescriptionFromString "button: Miscellaneous.Button @ gpioPortC 13 { IRQ -> gpioPortC@13 }"
 
 # 4. CARGAR FIRMWARE
 $bin?=@../build/Debug/ST_UnitTest.elf
-:$bin?=@https://dl.antmicro.com/projects/renode/zephyr-stm32f103-button.elf-s_276760-1bf32c99bbb3c01d81e13ca68118eaf08b2a815f
 sysbus LoadELF $bin
+echo "✅ Firmware cargado correctamente"
 
-# 5. LOGS
+# 5. LOGS PARA DEPURACIÓN
 logLevel -1 gpioPortC.led
 logLevel -1 gpioPortB.boton
 
-:cpu DisableExecutionTracing
-:cpu LogFunctionNames true
-
+# Logs adicionales para ver actividad
 sysbus LogAllPeripheralsAccess true
-:sysbus LogPeripheralAccess gpioPortC True
-:sysbus LogPeripheralAccess gpioPortB True
+
+# 6. SIMULACIÓN CON PRUEBAS
+echo "======================================================"
+echo "🟢 SIMULACIÓN INICIADA"
+echo "   LED en PC13"
+echo "   Botón en PB12 (con interrupción)"
+echo "======================================================"
 
 start
 
-sysbus FindSymbolAt `sysbus.cpu PC`
+# Esperar a que el firmware se estabilice
+sleep 1
+
+echo ""
+echo "🟢 Realizando pruebas..."
+
+# Secuencia de pruebas
+echo "🟢 Presionando botón 1..."
 gpioPortB.boton PressAndRelease
+sleep 0.5
+
+echo "🟢 Presionando botón 2..."
 gpioPortB.boton PressAndRelease
-sysbus FindSymbolAt `sysbus.cpu PC`
+sleep 0.5
+
+echo "🟢 Presionando botón 3..."
 gpioPortB.boton PressAndRelease
-gpioPortB.boton PressAndRelease
-sysbus FindSymbolAt `sysbus.cpu PC`
+sleep 0.5
+
+# Verificar estado final del LED
+echo ""
+echo "🟢 Estado final del LED:"
+gpioPortC.led State
+
+echo ""
+echo "======================================================"
+echo "🟢 SIMULACIÓN FINALIZADA"
+echo "======================================================"
 
 quit

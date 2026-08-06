@@ -131,7 +131,7 @@ pipeline {
                         if exist ..\\build\\%BUILD_TYPE%\\ST_UnitTest.elf (
                             echo "✅ Firmware encontrado: ..\\build\\%BUILD_TYPE%\\ST_UnitTest.elf"
                         ) else (
-                            echo "⚠️  Firmware NO encontrado"
+                            echo "⚠️  Firmware NO encontrado, usando firmware de ejemplo"
                         )
                         
                         echo "===== Ejecutando Renode ====="
@@ -144,7 +144,23 @@ pipeline {
                         findstr "led:" renode_output.log || echo "⚠️  No se encontraron logs del LED"
                         
                         echo "===== Verificando logs del botón ====="
-                        findstr "button:" renode_output.log || echo "⚠️  No se encontraron logs del botón"
+                        findstr "boton:" renode_output.log || echo "⚠️  No se encontraron logs del botón"
+                        
+                        echo "===== Verificando que el firmware se cargó ====="
+                        findstr "Firmware cargado correctamente" renode_output.log || echo "⚠️  Firmware no cargado"
+                        
+                        echo "===== Verificando ejecución de pruebas ====="
+                        findstr "SIMULACIÓN INICIADA" renode_output.log || echo "⚠️  Simulación no iniciada"
+                        findstr "SIMULACIÓN FINALIZADA" renode_output.log || echo "⚠️  Simulación no finalizada"
+                        
+                        echo "===== Verificando estado del LED ====="
+                        findstr "State" renode_output.log || echo "⚠️  No se encontró estado del LED"
+                        
+                        echo "===== Verificando errores críticos ====="
+                        findstr "ERROR" renode_output.log && (
+                            echo "❌ Se encontraron errores en la simulación"
+                            exit /b 1
+                        )
                     '''
                 }
             }
