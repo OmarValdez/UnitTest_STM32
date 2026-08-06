@@ -136,6 +136,26 @@ pipeline {
             }
         }
 
+        stage('Análisis de cobertura') {
+            steps {
+                echo '===== Generando reporte de cobertura ====='
+                dir('tests') {
+                    bat '''
+                        echo "===== Ejecutando ceedling coverage ====="
+                        bundle exec ceedling coverage --project project.yml
+                        
+                        echo "===== Verificando reportes de cobertura ====="
+                        if exist build\\coverage (
+                            echo "✅ Reportes generados en build/coverage/"
+                            dir build\\coverage
+                        ) else (
+                            echo "⚠️  No se generaron reportes de cobertura"
+                        )
+                    '''
+                }
+            }
+        }
+
         stage('Publicar resultados') {
             steps {
                 echo '===== Publicando resultados ====='
@@ -146,14 +166,8 @@ pipeline {
                 bat '''
                     echo "===== Convirtiendo resultados a JUnit XML ====="
                     cd tests
-                    
-                    echo "===== Verificando archivo .pass ====="
                     if exist build\\test\\results\\test_led_logic.pass (
-                        echo "✅ Archivo .pass encontrado"
-                        echo "===== Ejecutando script de conversión ====="
                         ruby convert_pass_to_junit.rb
-                    ) else (
-                        echo "⚠️  Archivo .pass no encontrado"
                     )
                 '''
                 
@@ -161,6 +175,35 @@ pipeline {
                 // PUBLICAR RESULTADOS JUNIT
                 // ============================================================
                 junit testResults: 'tests/build/test/results/*.xml', allowEmptyResults: true
+
+                // ============================================================
+                // PUBLICAR COBERTURA (COBERTURA PLUGIN)
+                // ============================================================
+                // Publicar reporte de cobertura usando Coverage Plugin
+                cobertura autoUpdateHealth: false,
+                        autoUpdateStability: false,
+                        coberturaReportFile: 'tests/build/coverage/**/*.xml',
+                        conditionalCoverageTargets: '70, 0, 0',
+                        failNoReports: false,
+                        failUnhealthy: false,
+                        failUnstable: false,
+                        lineCoverageTargets: '70, 0, 0',
+                        methodCoverageTargets: '70, 0, 0',
+                        onlyStable: false,
+                        sourceEncoding: 'ASCII',
+                        zoomCoverageChart: false
+
+                // ============================================================
+                // PUBLICAR REPORTE HTML DE COBERTURA
+                // ============================================================
+                publishHTML(target: [
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'tests/build/coverage',
+                    reportFiles: '**/*.html',
+                    reportName: 'Cobertura de Código'
+                ])
                 
                 // ============================================================
                 // ARCHIVAR ARTEFACTOS (SOLO LO QUE EXISTE)
