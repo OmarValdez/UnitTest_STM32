@@ -4,12 +4,11 @@
   :test_file_prefix: test_
 
 # ============================================================
-# PLUGINS
+# PLUGINS (SOLO LOS QUE EXISTEN)
 # ============================================================
 :plugins:
   :enabled:
-    - junit
-    - stdout_pretty_tests
+    - xml_tests_report   # ← Genera reportes XML (alternativo a junit)
 
 # ============================================================
 # RESULTADOS DE PRUEBAS
