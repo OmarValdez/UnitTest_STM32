@@ -141,15 +141,29 @@ pipeline {
                 echo '===== Generando reporte de cobertura ====='
                 dir('tests') {
                     bat '''
-                        echo "===== Ejecutando ceedling coverage ====="
-                        bundle exec ceedling coverage --project project.yml
+                        echo "===== Ejecutando pruebas con cobertura ====="
+                        bundle exec ceedling test:all --project project.yml
                         
-                        echo "===== Verificando reportes de cobertura ====="
-                        if exist build\\coverage (
-                            echo "✅ Reportes generados en build/coverage/"
-                            dir build\\coverage
+                        echo "===== Verificando archivos .gcda y .gcno ====="
+                        dir /s *.gcda *.gcno 2>nul || echo "⚠️  No se encontraron archivos de cobertura"
+                        
+                        echo "===== Generando reporte HTML con gcovr (desde MSYS2) ====="
+                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --html --html-details -o build/coverage/index.html
+                        
+                        echo "===== Generando reporte XML con gcovr (desde MSYS2) ====="
+                        D:\\msys64\\ucrt64\\bin\\gcovr.exe --root .. --xml -o build/coverage/coverage.xml
+                        
+                        echo "===== Verificando reportes ====="
+                        if exist build\\coverage\\index.html (
+                            echo "✅ Reporte HTML generado"
                         ) else (
-                            echo "⚠️  No se generaron reportes de cobertura"
+                            echo "⚠️  No se generó reporte HTML"
+                        )
+                        
+                        if exist build\\coverage\\coverage.xml (
+                            echo "✅ Reporte XML generado"
+                        ) else (
+                            echo "⚠️  No se generó reporte XML"
                         )
                     '''
                 }
@@ -174,25 +188,16 @@ pipeline {
                 // ============================================================
                 // PUBLICAR RESULTADOS JUNIT
                 // ============================================================
-                junit testResults: 'tests/build/test/results/*.xml', allowEmptyResults: true
+                junit testResults: 'tests/build/test/results/junit_report.xml', allowEmptyResults: false
 
                 // ============================================================
                 // PUBLICAR COBERTURA (COBERTURA PLUGIN)
                 // ============================================================
-                // Publicar reporte de cobertura usando Coverage Plugin
-                cobertura autoUpdateHealth: false,
-                        autoUpdateStability: false,
-                        coberturaReportFile: 'tests/build/coverage/**/*.xml',
-                        conditionalCoverageTargets: '70, 0, 0',
+                cobertura coberturaReportFile: 'tests/build/coverage/coverage.xml',
                         failNoReports: false,
-                        failUnhealthy: false,
-                        failUnstable: false,
                         lineCoverageTargets: '70, 0, 0',
-                        methodCoverageTargets: '70, 0, 0',
-                        onlyStable: false,
-                        sourceEncoding: 'ASCII',
-                        zoomCoverageChart: false
-
+                        conditionalCoverageTargets: '70, 0, 0'
+                
                 // ============================================================
                 // PUBLICAR REPORTE HTML DE COBERTURA
                 // ============================================================
@@ -201,7 +206,7 @@ pipeline {
                     alwaysLinkToLastBuild: true,
                     keepAll: true,
                     reportDir: 'tests/build/coverage',
-                    reportFiles: '**/*.html',
+                    reportFiles: 'index.html',
                     reportName: 'Cobertura de Código'
                 ])
                 
@@ -209,13 +214,10 @@ pipeline {
                 // ARCHIVAR ARTEFACTOS (SOLO LO QUE EXISTE)
                 // ============================================================
                 // Logs de las pruebas (si existen)
-                archiveArtifacts artifacts: 'tests/build/test/out/**/*.log', allowEmptyArchive: true, fingerprint: true
-                
-                // Log de Renode
-                archiveArtifacts artifacts: 'renodescripts/renode_output.log', allowEmptyArchive: true, fingerprint: true
-                
-                // Firmware (.elf)
+                archiveArtifacts artifacts: 'tests/build/coverage/**/*', allowEmptyArchive: true, fingerprint: true
+                archiveArtifacts artifacts: 'tests/build/test/results/*.xml', allowEmptyArchive: false, fingerprint: true
                 archiveArtifacts artifacts: 'build/Debug/*.elf', allowEmptyArchive: true, fingerprint: true
+                archiveArtifacts artifacts: 'renodescripts/renode_output.log', allowEmptyArchive: true, fingerprint: true
                 
                 // ============================================================
                 // GENERAR .bin SI NO EXISTE (opcional)

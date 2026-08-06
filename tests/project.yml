@@ -47,21 +47,6 @@
 :test_runner:
   :enabled: true
 
-# ============================================================
-# CONFIGURACIÓN DE COBERTURA (GCOV)
-# ============================================================
-:coverage:
-  :enabled: true
-  :reports:
-    - GcovHtml   # Genera reporte HTML
-    - GcovJson   # Genera reporte JSON (para integrar con Jenkins)
-  :tools:
-    :gcov:
-      :executable: gcov
-      :arguments: []
-  :source_files:
-    - ../Core/Src/*.c
-    - ../Core/Inc/*.h
 
 # ============================================================
 # HERRAMIENTAS
