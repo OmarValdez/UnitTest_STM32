@@ -12,11 +12,6 @@ pipeline {
 
     stages {
         stage('Full Build & Simulation') {
-            when {
-                // Ejecutar solo en main o cuando se solicite manualmente
-                branch 'main'
-                // O usar un parámetro: expression { params.FULL_BUILD == true }
-            }
             stages {
                 stage('Compile Firmware') {
                     steps {
