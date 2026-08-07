@@ -57,7 +57,7 @@
     :arguments:
       - -I"../Core/Inc"
       - -I"test/support/"
-      - -I"vendor/unity/src"
+      - -I"`bundle exec gem which unity`/src"
       - -DUNITY_INCLUDE_DOUBLE
       - -fprofile-arcs
       - -ftest-coverage
