@@ -25,10 +25,12 @@ jobs:
           ruby-version: '3.0'
           bundler-cache: true
 
-      - name: Install Ceedling dependencies
+      - name: Install Ceedling and Unity
         run: |
           gem install ceedling
+          gem install unity
           bundle install
+          gem which unity
 
       - name: Verify Ceedling installation
         run: |
