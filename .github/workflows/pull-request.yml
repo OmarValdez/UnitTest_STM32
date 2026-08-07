@@ -30,23 +30,9 @@ jobs:
           gem install bundler
           bundle install
 
-      - name: Find Unity path (from Ceedling)
-        id: unity_path
-        run: |
-          # Usar la ruta de Unity que viene con Ceedling
-          UNITY_PATH="vendor/bundle/ruby/3.0.0/gems/ceedling-1.1.2/vendor/unity/src"
-          echo "unity_path=$UNITY_PATH" >> $GITHUB_OUTPUT
-          echo "Unity path: $UNITY_PATH"
-
       - name: Run Unit Tests
-        env:
-          UNITY_PATH: ${{ steps.unity_path.outputs.unity_path }}
         run: |
           cd tests
-          echo "Unity path: $UNITY_PATH"
-          # Reemplazar la ruta en project.yml
-          sed -i "s|vendor/unity/src|$UNITY_PATH|g" project.yml
-          cat project.yml
           bundle exec ceedling test:all --project project.yml
 
       - name: Publish Test Results
