@@ -27,10 +27,7 @@ jobs:
 
       - name: Install Ceedling and Unity
         run: |
-          gem install ceedling
-          gem install unity
           bundle install
-          gem which unity
 
       - name: Verify Ceedling installation
         run: |
