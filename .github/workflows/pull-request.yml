@@ -30,6 +30,11 @@ jobs:
           gem install ceedling
           bundle install
 
+      - name: Verify Ceedling installation
+        run: |
+          ceedling version
+          gem list
+
       - name: Run Unit Tests
         run: |
           cd tests

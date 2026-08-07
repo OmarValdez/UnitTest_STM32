@@ -57,7 +57,7 @@
     :arguments:
       - -I"../Core/Inc"
       - -I"test/support/"
-      - -I"D:/Ruby40-x64/lib/ruby/gems/4.0.0/gems/ceedling-1.1.2/vendor/unity/src"
+      - -I"vendor/unity/src"
       - -DUNITY_INCLUDE_DOUBLE
       - -fprofile-arcs
       - -ftest-coverage
