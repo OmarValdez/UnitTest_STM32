@@ -30,20 +30,34 @@ jobs:
           gem install bundler
           bundle install
 
-      - name: Get Unity path
+      - name: Debug - List all files in vendor/bundle
+        run: |
+          echo "=== Archivos en vendor/bundle ==="
+          find vendor/bundle -name "unity.h"
+          echo "=== Gems instaladas ==="
+          bundle list
+
+      - name: Find Unity path
         id: unity_path
         run: |
-          # Buscar unity.h en el sistema
-          UNITY_PATH=$(find vendor/bundle -name "unity.h" -path "*/src/*" | head -1 | xargs dirname)
+          # Buscar unity.h en la gema unity (no en ceedling)
+          UNITY_PATH=$(find vendor/bundle -path "*/unity-*/src/*" -name "unity.h" | head -1 | xargs dirname)
+          if [ -z "$UNITY_PATH" ]; then
+            # Si no se encuentra, usar la ruta de la gema unity directamente
+            UNITY_PATH=$(find vendor/bundle -type d -name "unity-*" | head -1)/src
+          fi
           echo "unity_path=$UNITY_PATH" >> $GITHUB_OUTPUT
           echo "Unity path: $UNITY_PATH"
 
-      - name: Run Unit Tests with Unity path
+      - name: Run Unit Tests
         env:
           UNITY_PATH: ${{ steps.unity_path.outputs.unity_path }}
         run: |
           cd tests
           echo "Unity path: $UNITY_PATH"
+          # Reemplazar la ruta en project.yml
+          sed -i "s|vendor/unity/src|$UNITY_PATH|g" project.yml
+          cat project.yml
           bundle exec ceedling test:all --project project.yml
 
       - name: Publish Test Results
