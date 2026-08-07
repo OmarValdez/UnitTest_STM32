@@ -33,7 +33,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           cd tests
-          bundle exec ceedling test:all --project project.yml
+          bundle exec ceedling test:all
 
       - name: Publish Test Results
         uses: mikepenz/action-junit-report@v3
