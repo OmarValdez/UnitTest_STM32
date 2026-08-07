@@ -30,22 +30,11 @@ jobs:
           gem install bundler
           bundle install
 
-      - name: Debug - List all files in vendor/bundle
-        run: |
-          echo "=== Archivos en vendor/bundle ==="
-          find vendor/bundle -name "unity.h"
-          echo "=== Gems instaladas ==="
-          bundle list
-
-      - name: Find Unity path
+      - name: Find Unity path (from Ceedling)
         id: unity_path
         run: |
-          # Buscar unity.h en la gema unity (no en ceedling)
-          UNITY_PATH=$(find vendor/bundle -path "*/unity-*/src/*" -name "unity.h" | head -1 | xargs dirname)
-          if [ -z "$UNITY_PATH" ]; then
-            # Si no se encuentra, usar la ruta de la gema unity directamente
-            UNITY_PATH=$(find vendor/bundle -type d -name "unity-*" | head -1)/src
-          fi
+          # Usar la ruta de Unity que viene con Ceedling
+          UNITY_PATH="vendor/bundle/ruby/3.0.0/gems/ceedling-1.1.2/vendor/unity/src"
           echo "unity_path=$UNITY_PATH" >> $GITHUB_OUTPUT
           echo "Unity path: $UNITY_PATH"
 
