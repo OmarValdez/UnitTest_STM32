@@ -33,8 +33,10 @@ jobs:
       - name: Get Unity path
         id: unity_path
         run: |
-          UNITY_PATH=$(bundle exec gem which unity | sed 's/\/lib\/unity.rb//g')
+          # Buscar unity.h en el sistema
+          UNITY_PATH=$(find vendor/bundle -name "unity.h" -path "*/src/*" | head -1 | xargs dirname)
           echo "unity_path=$UNITY_PATH" >> $GITHUB_OUTPUT
+          echo "Unity path: $UNITY_PATH"
 
       - name: Run Unit Tests with Unity path
         env:
