@@ -23,7 +23,6 @@
     - ../Core/Src/
   :include:
     - ../Core/Inc/
-    - test/support/
   :support:
     - test/support/
 
@@ -32,8 +31,6 @@
     - ../Core/Src/*.c
   :test:
     - test/test_*.c
-  :support:
-    - test/support/*.c
 
 :defines:
   :test:
