@@ -39,9 +39,9 @@
   :test:
     - UNITY_INCLUDE_DOUBLE
 
-# === CMOCK DESHABILITADO ===
+# === CMOCK HABILITADO ===
 :cmock:
-  :enabled: false
+  :enabled: true
 
 # === HABILITAR GENERACIÓN AUTOMÁTICA DE RUNNERS ===
 :test_runner:
@@ -53,7 +53,7 @@
 # ============================================================
 :tools:
   :test_compiler:
-    :executable: gcc
+    :executable: arm-none-eabi-gcc
     :arguments:
       - -I"../Core/Inc"
       - -I"test/support/"
@@ -64,9 +64,10 @@
       - -c "${1}"
       - -o "${2}"
   :test_linker:
-    :executable: gcc
+    :executable: arm-none-eabi-gcc
     :arguments:
       - "${1}"
       - -o "${2}"
       - -lm
       - -lgcov
+      - --specs=nano.specs

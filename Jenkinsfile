@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Variables de entorno para herramientas
-        PATH = "${env.PATH};D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode"
+        PATH = "${env.PATH};D:/Program Files/Arm/GNU Toolchain mingw-w64-x86_64-arm-none-eabi/bin;D:/Ruby40-x64/bin;D:/msys64/ucrt64/bin;D:/Program Files/Renode"
         RUBY_HOME = "D:/Ruby40-x64"
         BUNDLE_PATH = "${WORKSPACE}/vendor/bundle"
         BUNDLE_DISABLE_SHARED_GEMS = "1"
@@ -20,6 +20,8 @@ pipeline {
                             env.BUILD_TYPE = "Debug"                    // "Debug" o "Release"
                         }
                         bat '''
+                            echo Verifying ARM toolchain...
+                            arm-none-eabi-gcc --version
                             cmake --preset %BUILD_TYPE%
                             cmake --build build --config %BUILD_TYPE%
                             arm-none-eabi-objcopy -O binary build\\%BUILD_TYPE%\\ST_UnitTest.elf build\\%BUILD_TYPE%\\ST_UnitTest.bin

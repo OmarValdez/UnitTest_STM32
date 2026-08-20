@@ -19,6 +19,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install ARM toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -29,6 +34,11 @@ jobs:
         run: |
           gem install bundler
           bundle install
+
+      - name: Verify ARM toolchain
+        run: |
+          arm-none-eabi-gcc --version
+          which arm-none-eabi-gcc
 
       - name: Run Unit Tests
         run: |
