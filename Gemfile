@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'ceedling', '1.1.2'
+gem 'ceedling'
 gem 'diy', '~> 1.1'
 gem 'unity'
 gem 'rake'
