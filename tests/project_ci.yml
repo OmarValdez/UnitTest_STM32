@@ -21,10 +21,8 @@
     - +:test/
   :source:
     - ../Core/Src/
-    - test/mocks/
   :include:
     - ../Core/Inc/
-    - test/mocks/
 
 :files:
   :source:
@@ -52,6 +50,16 @@
     - :ignore_arg
     - :array
     - :cexception
+
+:paths:
+  :test:
+    - +:test/
+  :source:
+    - ../Core/Src/
+    - build/test/mocks/
+  :include:
+    - ../Core/Inc/
+    - build/test/mocks/
 
 :paths:
   :test:
