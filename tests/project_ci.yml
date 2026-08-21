@@ -53,7 +53,7 @@
       - -I"../Core/Inc"
       - -I"build/vendor/unity/src"
       - -I"build/vendor/cmock/src"
-      - -I"build/test/mocks/test_led_logic"
+      - -I"build/test/mocks"
       - -DUNITY_INCLUDE_DOUBLE
       - -c "${1}"
       - -o "${2}"
