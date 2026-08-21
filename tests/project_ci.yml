@@ -27,9 +27,10 @@
 :files:
   :source:
     - ../Core/Src/*.c
-    - build/test/mocks/**/*.c
   :test:
     - test/test_*.c
+  :support:
+    - build/test/mocks/
 
 :defines:
   :test:
