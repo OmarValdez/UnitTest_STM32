@@ -51,7 +51,8 @@
     :executable: arm-none-eabi-gcc
     :arguments:
       - -I"../Core/Inc"
-      - -I"vendor/bundle/ruby/3.0.0/gems/ceedling-*/vendor/unity/src"
+      - -I"build/vendor/unity/src"
+      - -I"build/vendor/cmock/src"
       - -DUNITY_INCLUDE_DOUBLE
       - -fprofile-arcs
       - -ftest-coverage
