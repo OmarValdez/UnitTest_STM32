@@ -23,6 +23,8 @@
     - ../Core/Src/
   :include:
     - ../Core/Inc/
+  :support:
+    - test/support
 
 :files:
   :source:
@@ -35,14 +37,13 @@
   :test:
     - UNITY_INCLUDE_DOUBLE
 
-# === CMOCK HABILITADO ===
+# CMock disabled: mocks are provided manually in test/support/
 :cmock:
-  :enabled: true
+  :enabled: false
 
 # === HABILITAR GENERACIÓN AUTOMÁTICA DE RUNNERS ===
 :test_runner:
   :enabled: true
-
 
 # ============================================================
 # HERRAMIENTAS
@@ -52,8 +53,8 @@
     :executable: arm-none-eabi-gcc
     :arguments:
       - -I"../Core/Inc"
+      - -I"test/support"
       - -I"build/vendor/unity/src"
-      - -I"build/vendor/cmock/src"
       - -DUNITY_INCLUDE_DOUBLE
       - -c "${1}"
       - -o "${2}"

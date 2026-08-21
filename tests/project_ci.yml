@@ -3,7 +3,6 @@
 # ============================================================
 :project:
   :name: "ST_UnitTest_CI"
-  :use_mocks: TRUE
   :use_test_preprocessor: :none
   :use_backtrace: :simple
   :build_root: build
@@ -21,6 +20,8 @@
     - ../Core/Src/**
   :include:
     - ../Core/Inc/**
+  :support:
+    - test/support
 
 :files:
   :test: []
@@ -31,25 +32,9 @@
     - UNITY_INCLUDE_DOUBLE
   :release: []
 
+# CMock disabled: mocks are provided manually in test/support/
 :cmock:
-  :enabled: true
-  :mock_prefix: 'mock_'
-  :mock_suffix: ''
-  :verbosity: 2
-  :when_no_prototypes: :warn
-  :plugins:
-    - :expect
-    - :expect_any_args
-    - :return
-    - :callback
-    - :ignore
-    - :ignore_arg
-    - :array
-    - :cexception
-  :enforce_strict_ordering: true
-  :fail_on_unexpected_calls: true
-  :include:
-    - led_logic.h
+  :enabled: false
 
 :test_runner:
   :enabled: true
@@ -59,9 +44,8 @@
     :executable: gcc
     :arguments:
       - -I"../Core/Inc"
+      - -I"test/support"
       - -I"build/vendor/unity/src"
-      - -I"build/vendor/cmock/src"
-      - -I"build/test/mocks"
       - -DUNITY_INCLUDE_DOUBLE
       - -c "${1}"
       - -o "${2}"

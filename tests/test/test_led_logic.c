@@ -1,5 +1,6 @@
 #include "unity.h"
 #include "led_logic.h"
+#include "mock_led_logic.h"
 
 void test_led_logic_init_debe_apagar_led(void) {
     led_logic_init();
