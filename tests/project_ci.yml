@@ -29,6 +29,8 @@
     - ../Core/Src/*.c
   :test:
     - test/test_*.c
+  :support:
+    - build/test/mocks/**/*.c
 
 :defines:
   :test:
@@ -37,6 +39,8 @@
 # === CMOCK HABILITADO ===
 :cmock:
   :enabled: true
+  :include:
+    - ../Core/Inc/led_logic.h
 
 # === HABILITAR GENERACIÓN AUTOMÁTICA DE RUNNERS ===
 :test_runner:
