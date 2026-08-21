@@ -2,47 +2,41 @@
 # Proyect - CI Configuration (Host compilation)
 # ============================================================
 :project:
+  :name: "ST_UnitTest_CI"
+  :use_mocks: TRUE
+  :use_test_preprocessor: :none
+  :use_backtrace: :simple
   :build_root: build
-  :release_build: FALSE
   :test_file_prefix: test_
+  :default_tasks:
+    - test:all
+  :test_threads: 4
+  :compile_threads: 4
+  :release_build: FALSE
 
-# ============================================================
-# RESULTADOS DE PRUEBAS
-# ============================================================
-:test_results:
-  :enabled: true
-  :include_failure_messages: true
-
-# ============================================================
-# RUTAS
-# ============================================================
 :paths:
   :test:
-    - +:test/
+    - +:test/**
   :source:
-    - ../Core/Src/
+    - ../Core/Src/**
   :include:
-    - ../Core/Inc/
+    - ../Core/Inc/**
 
 :files:
-  :source:
-    - ../Core/Src/*.c
-  :test:
-    - test/test_*.c
-  :support:
-    - build/test/mocks/
+  :test: []
+  :source: []
 
 :defines:
   :test:
     - UNITY_INCLUDE_DOUBLE
+  :release: []
 
-# === CMOCK HABILITADO ===
 :cmock:
   :enabled: true
-  :mock_prefix: mock_
-  :mock_path: test/mocks
-  :include:
-    - led_logic.h
+  :mock_prefix: 'mock_'
+  :mock_suffix: ''
+  :verbosity: 2
+  :when_no_prototypes: :warn
   :plugins:
     - :expect
     - :expect_any_args
@@ -52,15 +46,14 @@
     - :ignore_arg
     - :array
     - :cexception
+  :enforce_strict_ordering: true
+  :fail_on_unexpected_calls: true
+  :include:
+    - led_logic.h
 
-# === HABILITAR GENERACIÓN AUTOMÁTICA DE RUNNERS ===
 :test_runner:
   :enabled: true
 
-
-# ============================================================
-# HERRAMIENTAS - Host GCC for CI
-# ============================================================
 :tools:
   :test_compiler:
     :executable: gcc
