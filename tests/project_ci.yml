@@ -38,9 +38,9 @@
 :cmock:
   :enabled: true
   :mock_prefix: mock_
+  :mock_path: test/mocks
   :include:
     - led_logic.h
-  :mock_path: build/test/mocks
   :plugins:
     - :expect
     - :expect_any_args
