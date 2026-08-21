@@ -29,8 +29,6 @@
     - ../Core/Src/*.c
   :test:
     - test/test_*.c
-  :support:
-    - build/test/mocks/**/*.c
 
 :defines:
   :test:
@@ -42,6 +40,7 @@
   :mock_prefix: mock_
   :include:
     - led_logic.h
+  :mock_path: build/test/mocks
   :plugins:
     - :expect
     - :expect_any_args
