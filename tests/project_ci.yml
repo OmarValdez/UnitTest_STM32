@@ -37,8 +37,18 @@
 # === CMOCK HABILITADO ===
 :cmock:
   :enabled: true
+  :mock_prefix: mock_
   :include:
-    - ../Core/Inc/led_logic.h
+    - led_logic.h
+  :plugins:
+    - :expect
+    - :expect_any_args
+    - :return
+    - :callback
+    - :ignore
+    - :ignore_arg
+    - :array
+    - :cexception
 
 # === HABILITAR GENERACIÓN AUTOMÁTICA DE RUNNERS ===
 :test_runner:
