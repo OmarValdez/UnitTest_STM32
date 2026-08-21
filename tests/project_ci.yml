@@ -29,8 +29,6 @@
     - ../Core/Src/*.c
   :test:
     - test/test_*.c
-  :support:
-    - build/test/mocks/**/*.c
 
 :defines:
   :test:
