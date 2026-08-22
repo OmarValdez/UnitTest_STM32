@@ -36,6 +36,14 @@
 :cmock:
   :enabled: false
 
+:plugins:
+  :enabled:
+    - report_tests_log_factory
+
+:report_tests_log_factory:
+  :reports:
+    - junit
+
 :test_runner:
   :enabled: true
 
