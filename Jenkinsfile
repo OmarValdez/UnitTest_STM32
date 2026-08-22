@@ -23,7 +23,8 @@ pipeline {
                             echo Verifying ARM toolchain...
                             arm-none-eabi-gcc --version
                             cmake --preset %BUILD_TYPE%
-                            cmake --build build --config %BUILD_TYPE%
+                            if exist build\\%BUILD_TYPE% ( cmake --build build\\%BUILD_TYPE% --target clean )
+                            cmake --build build\\%BUILD_TYPE% --config %BUILD_TYPE%
                             arm-none-eabi-objcopy -O binary build\\%BUILD_TYPE%\\ST_UnitTest.elf build\\%BUILD_TYPE%\\ST_UnitTest.bin
                         '''
                     }
