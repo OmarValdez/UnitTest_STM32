@@ -11,6 +11,19 @@ pipeline {
     }
 
     stages {
+        stage('Limpieza de artefactos') {
+            steps {
+                bat '''
+                    echo Limpiando artefactos de builds anteriores...
+                    if exist build rmdir /s /q build
+                    if exist tests\\build rmdir /s /q tests\\build
+                    if exist renode_output.log del /q renode_output.log
+                    if exist renodescripts\\renode_output.log del /q renodescripts\\renode_output.log
+                    echo Limpieza completada.
+                '''
+            }
+        }
+
         stage('Full Build & Simulation') {
             stages {
                 stage('Compile Firmware') {
@@ -48,6 +61,7 @@ pipeline {
                             bat '''
                                 gem install bundler
                                 bundle install
+                                if %ERRORLEVEL% NEQ 0 ( echo ❌ bundle install fallo & exit /b 1 )
                                 run_coverage.bat
                             '''
                         }

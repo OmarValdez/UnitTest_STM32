@@ -1,8 +1,12 @@
 @echo off
 echo ===== Ejecutando pruebas con cobertura =====
 call bundle exec ceedling test:all --project project.yml
+if %ERRORLEVEL% NEQ 0 (
+    echo ❌ Ceedling fallo al ejecutar las pruebas
+    exit /b 1
+)
 
-echo ===== Ceedling finalizado. Continuando... =====
+echo ===== Ceedling finalizado correctamente. Continuando... =====
 
 echo ===== Verificando archivos .gcda =====
 dir /s build\test\out\*.gcda
