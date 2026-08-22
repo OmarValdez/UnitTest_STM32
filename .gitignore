@@ -36,3 +36,4 @@ tests/test/results/
 .idea/
 *.swp
 *.swo
+.clangd
