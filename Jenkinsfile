@@ -74,7 +74,7 @@ pipeline {
     post {
         success {
             // Publicar artefactos solo si todos los stages pasaron
-            archiveArtifacts artifacts: 'build/%BUILD_TYPE%/*.elf, build/%BUILD_TYPE%/*.bin, tests/build/coverage/**/*'
+            archiveArtifacts artifacts: "build/${env.BUILD_TYPE}/*.elf, build/${env.BUILD_TYPE}/*.bin, tests/build/coverage/**/*"
             echo '✅ Full build completed successfully!'
         }
         failure {
