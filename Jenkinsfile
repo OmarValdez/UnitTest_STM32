@@ -35,6 +35,8 @@ pipeline {
                         dir('renodescripts') {
                             bat '''
                                 renode --console --disable-xwt -e "include @stm32f103_led_sim.resc" > renode_output.log 2>&1
+                                type renode_output.log
+                                findstr /C:"SIMULACION FINALIZADA" renode_output.log || (echo ⚠️ No se encontro el marcador de finalizacion de la simulacion & exit /b 1)
                             '''
                         }
                     }
@@ -44,6 +46,8 @@ pipeline {
                     steps {
                         dir('tests') {
                             bat '''
+                                gem install bundler
+                                bundle install
                                 run_coverage.bat
                             '''
                         }
