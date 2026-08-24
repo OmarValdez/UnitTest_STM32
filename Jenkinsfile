@@ -12,9 +12,15 @@ pipeline {
 
         stage('Limpieza de artefactos') {
             steps {
-                // Se ejecuta dentro del contenedor (root) para evitar problemas
-                // de permisos al borrar archivos creados por el contenedor.
-                bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest rm -rf build tests/build docs'
+                // Limpieza en el HOST (Windows). Borrar desde el contenedor
+                // falla con "Permission denied" en bind-mounts 9p de Docker
+                // Desktop (los archivos creados por Linux no se borran como root).
+                // del /f fuerza archivos read-only; rmdir /s /q quita el arbol.
+                bat '''
+                    if exist build ( del /f /s /q build & rmdir /s /q build )
+                    if exist tests\\build ( del /f /s /q tests\\build & rmdir /s /q tests\\build )
+                    if exist docs ( del /f /s /q docs & rmdir /s /q docs )
+                '''
             }
         }
 
