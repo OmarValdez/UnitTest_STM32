@@ -15,7 +15,7 @@ machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13
 machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
 
 # 4. CARGAR FIRMWARE
-$bin?=@../build/Debug/ST_UnitTest.elf
+$bin?=@../build/DockerDebug/ST_UnitTest.elf
 sysbus LoadELF $bin
 echo "✅ Firmware cargado correctamente"
 
