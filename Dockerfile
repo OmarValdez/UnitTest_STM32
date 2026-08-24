@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         doxygen \
         graphviz \
         gcc-arm-none-eabi \
+        libnewlib-arm-none-eabi \
         gdb-multiarch \
         libicu72 \
         libssl3 \
