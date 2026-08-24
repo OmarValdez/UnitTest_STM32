@@ -4,7 +4,7 @@
  *
  * Este módulo NO accede a registros del microcontrolador; solo invoca la
  * interfaz HAL (hal_gpio_*). Eso permite cambiar de MCU (p. ej. por falta de
- * stock) implementando únicamente la capa ports/<mcu> sin tocar esta lógica.
+ * stock) implementando únicamente la capa ports/mcu sin tocar esta lógica.
  *
  * @requirement ICN-SW-001 La aplicación debe poder encender y apagar el LED de estado.
  * @requirement ICN-SW-002 El estado del LED conmuta solo en flanco de subida del botón.

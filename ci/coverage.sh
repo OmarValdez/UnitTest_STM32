@@ -10,14 +10,16 @@ if [ $? -ne 0 ]; then
     echo "❌ Ceedling fallo al ejecutar las pruebas"
     exit 1
 fi
+cd /work
 
 mkdir -p build/coverage
 gcovr --root . \
-      --object-directory build/test/out/test_led_logic \
+      --object-directory tests/build/test/out/test_led_logic \
+      --filter Core/Src \
       --gcov-executable gcov \
       --print-summary \
-      --html --html-details -o build/coverage/index.html \
-      --xml -o build/coverage/coverage.xml
+      --html=build/coverage/index.html --html-details \
+      --xml=build/coverage/coverage.xml
 
 test -f build/coverage/index.html || { echo "❌ No se generó reporte HTML"; exit 1; }
 test -f build/coverage/coverage.xml || { echo "❌ No se generó reporte XML"; exit 1; }

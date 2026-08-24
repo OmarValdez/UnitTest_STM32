@@ -55,6 +55,8 @@
       - -I"test/support"
       - -I"build/vendor/unity/src"
       - -DUNITY_INCLUDE_DOUBLE
+      - --coverage
+      - -fprofile-abs-path
       - -c "${1}"
       - -o "${2}"
   :test_linker:
@@ -62,4 +64,5 @@
     :arguments:
       - "${1}"
       - -o "${2}"
+      - --coverage
       - -lm
