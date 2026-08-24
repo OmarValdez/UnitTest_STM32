@@ -70,5 +70,17 @@ RUN gem install bundler \
 # --- Configuracion MISRA del proyecto (misra.json + misra.txt opcional) ---
 COPY config/ /opt/misra-config/
 
+# Descarga del texto de reglas MISRA-C:2012 (formato cppcheck) desde GitLab.
+# Solo si no se proveyo uno localmente en config/misra.txt (tiene prioridad).
+# Nota licencia: CC BY-NC-ND 4.0 -> revisar compatibilidad con uso comercial.
+RUN if [ ! -f /opt/misra-config/misra.txt ]; then \
+        wget -q "https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools/-/raw/main/misra_c_2012__headlines_for_cppcheck%20-%20AMD1%2BAMD2.txt" \
+            -O /opt/misra-config/misra.txt \
+        && echo "✅ misra.txt descargado de GitLab" \
+        || echo "⚠️ No se pudo descargar misra.txt (¿repo privado?). MISRA deshabilitado."; \
+    else \
+        echo "ℹ️ Usando misra.txt local de config/"; \
+    fi
+
 WORKDIR /work
 ENTRYPOINT ["/bin/bash", "-c"]
