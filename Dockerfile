@@ -35,8 +35,10 @@ RUN wget -q https://builds.renode.io/renode-latest.linux-portable.tar.gz -O /tmp
     && rm -f /tmp/renode.tar.gz
 ENV PATH="/opt/renode:${PATH}"
 
-# --- gcovr (cobertura) y herramientas de analisis estatico auxiliares ---
-RUN pip3 install --no-cache-dir gcovr lizard flawfinder cpplint jinja2
+    # --- gcovr (cobertura) y herramientas de analisis estatico auxiliares ---
+    # --break-system-packages: Debian bookworm marca pip como externally-managed (PEP 668).
+    # Aceptable en un contenedor desechable de CI.
+    RUN pip3 install --no-cache-dir --break-system-packages gcovr lizard flawfinder cpplint jinja2
 
 # --- cppcheck 2.21.0 desde fuente (compatible con el addon MISRA) ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
