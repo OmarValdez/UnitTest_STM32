@@ -30,6 +30,15 @@ renode_output.log
 # ARCHIVOS DE PRUEBAS (Ceedling)
 tests/build/
 tests/test/results/
+tests/vendor/
+
+# DOCUMENTACIÓN GENERADA (Doxygen)
+docs/html/
+docs/xml/
+docs/latex/
+
+# ANÁLISIS ESTÁTICO
+build/static/
 
 # ARCHIVOS DE IDE
 .vscode/

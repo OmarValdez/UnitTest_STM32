@@ -1,0 +1,12 @@
+# Uso local del entorno reproducible (colaboradores).
+# Construye la imagen y monta el workspace para desarrollar/compilar igual que en CI.
+services:
+  sw-medico:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sw-medico:latest
+    volumes:
+      - .:/work
+    working_dir: /work
+    command: sleep infinity

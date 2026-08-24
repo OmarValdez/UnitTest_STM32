@@ -1,0 +1,11 @@
+# Artefactos y caches que NO deben ir al contexto de build de Docker
+build/
+tests/build/
+vendor/
+docs/
+.git/
+.github/
+.bundle/
+*.log
+renodescripts/renode_output.log
+renode_output.log

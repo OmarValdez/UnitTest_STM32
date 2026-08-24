@@ -1,0 +1,38 @@
+# Doxyfile para documentación del proyecto SW (IEC 62304)
+# Los requisitos se documentan en el código con el tag @req.
+
+PROJECT_NAME           = "ST_UnitTest (Piloto IEC 62304)"
+PROJECT_NUMBER         = 0.1
+PROJECT_BRIEF          = "Firmware piloto con trazabilidad de requisitos"
+
+OUTPUT_DIRECTORY       = docs
+CREATE_SUBDIRS         = NO
+OPTIMIZE_OUTPUT_FOR_C  = YES
+JAVADOC_AUTOBRIEF      = YES
+QUIET                  = YES
+WARNINGS               = NO
+
+# Alias propio para requisitos (trazabilidad)
+ALIASES                = "req{1}=@par Requisito\n\1"
+
+# Extracción
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+HIDE_UNDOC_MEMBERS     = NO
+WARN_IF_UNDOCUMENTED   = NO
+
+INPUT                  = Core/Src Core/Inc
+RECURSIVE              = YES
+FILE_PATTERNS          = *.c *.h
+
+# Generadores
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+
+# Lenguaje
+OPTIMIZE_FOR_FORTRAN   = NO
+EXTENSION_MAPPING      = .c=C .h=C

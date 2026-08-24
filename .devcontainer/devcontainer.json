@@ -1,0 +1,22 @@
+{
+    "name": "SW Medico Dev",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "image": "sw-medico:latest",
+    "workspaceFolder": "/work",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/work,type=bind"
+    ],
+    "remoteUser": "root",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "twxs.cmake",
+                "matepek.vscode-catch2-test-adapter"
+            ]
+        }
+    },
+    "postCreateCommand": "bundle config set --local path 'vendor/bundle' && bundle install"
+}
