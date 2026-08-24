@@ -83,4 +83,3 @@ RUN if [ ! -f /opt/misra-config/misra.txt ]; then \
     fi
 
 WORKDIR /work
-ENTRYPOINT ["/bin/bash", "-c"]
