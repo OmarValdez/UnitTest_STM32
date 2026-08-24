@@ -2,18 +2,19 @@ pipeline {
     agent any
 
     stages {
+        stage('Construir imagen Docker') {
+            steps {
+                // Requiere Docker en el agente. El cache de capas acelera rebuilds.
+                // Se ejecuta PRIMERO para que la imagen exista antes de usarla.
+                bat 'docker build -t sw-medico:latest .'
+            }
+        }
+
         stage('Limpieza de artefactos') {
             steps {
                 // Se ejecuta dentro del contenedor (root) para evitar problemas
                 // de permisos al borrar archivos creados por el contenedor.
                 bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest rm -rf build tests/build docs'
-            }
-        }
-
-        stage('Construir imagen Docker') {
-            steps {
-                // Requiere Docker en el agente. El cache de capas acelera rebuilds.
-                bat 'docker build -t sw-medico:latest .'
             }
         }
 
