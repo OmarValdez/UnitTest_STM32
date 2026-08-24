@@ -26,14 +26,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libc6-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# --- Renode (simulación de sistema) vía repo oficial ---
-RUN wget -qO- https://download.renode.io/apt/keys/renode.key \
-        | gpg --dearmor -o /usr/share/keyrings/renode-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/renode-archive-keyring.gpg] https://download.renode.io/apt stable main" \
-        > /etc/apt/sources.list.d/renode.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends renode \
-    && rm -rf /var/lib/apt/lists/*
+# --- Renode (simulación de sistema) vía tarball portable ---
+# Se usa el portable en vez del repo apt para evitar problemas de llaves GPG.
+# El portable incrusta su propio runtime (Mono), no requiere dependencias apt.
+RUN wget -q https://builds.renode.io/renode-latest.linux-portable.tar.gz -O /tmp/renode.tar.gz \
+    && mkdir -p /opt/renode \
+    && tar xf /tmp/renode.tar.gz -C /opt/renode --strip-components=1 \
+    && rm -f /tmp/renode.tar.gz
+ENV PATH="/opt/renode:${PATH}"
 
 # --- gcovr (cobertura) y herramientas de analisis estatico auxiliares ---
 RUN pip3 install --no-cache-dir gcovr lizard flawfinder cpplint jinja2
