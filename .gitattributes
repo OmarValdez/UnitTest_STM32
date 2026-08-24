@@ -1,0 +1,13 @@
+# Normalizar fines de linea para evitar fallos en contenedores Linux/CI.
+# Windows (CRLF) rompe scripts bash (p.ej. "set -o pipefail\r" invalido).
+* text=auto
+
+*.sh text eol=lf
+Dockerfile text eol=lf
+Jenkinsfile text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+Gemfile text eol=lf
+*.py text eol=lf
+
+*.bat text eol=crlf
