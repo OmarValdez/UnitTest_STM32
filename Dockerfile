@@ -41,6 +41,9 @@ ENV PATH="/opt/renode:${PATH}"
     RUN pip3 install --no-cache-dir --break-system-packages gcovr lizard flawfinder cpplint jinja2
 
 # --- cppcheck 2.21.0 desde fuente (compatible con el addon MISRA) ---
+# Prefijo /usr para que los addons queden en /usr/share/cppcheck/addons
+# (donde cppcheck resuelve --addon=misra). Copiamos misra.py del arbol
+# fuente para no depender de si 'make install' instala o no los addons.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
     && rm -rf /var/lib/apt/lists/* \
@@ -49,15 +52,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && tar -xzf 2.21.0.tar.gz \
     && cd cppcheck-2.21.0 \
     && mkdir build && cd build \
-    && cmake .. \
+    && cmake -DCMAKE_INSTALL_PREFIX=/usr .. \
     && make -j"$(nproc)" \
     && make install \
+    && mkdir -p /usr/share/cppcheck/addons \
+    && cp /tmp/cppcheck-2.21.0/addons/misra.py /usr/share/cppcheck/addons/misra.py \
+    && chmod +x /usr/share/cppcheck/addons/misra.py \
     && cd / && rm -rf /tmp/cppcheck-2.21.0 /tmp/2.21.0.tar.gz
-
-# --- Addon MISRA para cppcheck (misma version 2.21.0 que la compilacion) ---
-RUN wget -q https://github.com/cppcheck-opensource/cppcheck/raw/2.21.0/addons/misra.py \
-        -O /usr/share/cppcheck/addons/misra.py \
-    && chmod +x /usr/share/cppcheck/addons/misra.py
 
 # --- Ceedling / Unity (se hornean las gemas en la imagen) ---
 WORKDIR /gemsbuild

@@ -1,5 +1,5 @@
 {
-    "script": "addons/misra.py",
+    "script": "/usr/share/cppcheck/addons/misra.py",
     "args": ["--rule-texts=/opt/misra-config/misra.txt"],
     "misra-c": {
         "version": "2012"
