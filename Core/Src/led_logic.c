@@ -6,9 +6,9 @@
  * interfaz HAL (hal_gpio_*). Eso permite cambiar de MCU (p. ej. por falta de
  * stock) implementando únicamente la capa ports/<mcu> sin tocar esta lógica.
  *
- * @req ICN-SW-001 La aplicación debe poder encender y apagar el LED de estado.
- * @req ICN-SW-002 El estado del LED conmuta solo en flanco de subida del botón.
- * @req ICN-SW-003 El acceso al hardware se delega en hal_gpio_write_led.
+ * @requirement ICN-SW-001 La aplicación debe poder encender y apagar el LED de estado.
+ * @requirement ICN-SW-002 El estado del LED conmuta solo en flanco de subida del botón.
+ * @requirement ICN-SW-003 El acceso al hardware se delega en hal_gpio_write_led.
  */
 
 #include "led_logic.h"

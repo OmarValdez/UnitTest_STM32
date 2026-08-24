@@ -37,22 +37,22 @@ RUN wget -qO- https://download.renode.io/apt/keys/renode.key \
 # --- gcovr (cobertura) y herramientas de analisis estatico auxiliares ---
 RUN pip3 install --no-cache-dir gcovr lizard flawfinder cpplint jinja2
 
-# --- cppcheck 2.14 desde fuente (compatible con el addon MISRA) ---
+# --- cppcheck 2.21.0 desde fuente (compatible con el addon MISRA) ---
 RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
     && rm -rf /var/lib/apt/lists/* \
     && cd /tmp \
-    && wget -q https://github.com/danmar/cppcheck/archive/refs/tags/2.14.0.tar.gz \
-    && tar -xzf 2.14.0.tar.gz \
-    && cd cppcheck-2.14.0 \
+    && wget -q https://github.com/cppcheck-opensource/cppcheck/archive/refs/tags/2.21.0.tar.gz \
+    && tar -xzf 2.21.0.tar.gz \
+    && cd cppcheck-2.21.0 \
     && mkdir build && cd build \
     && cmake .. \
     && make -j"$(nproc)" \
     && make install \
-    && cd / && rm -rf /tmp/cppcheck-2.14.0 /tmp/2.14.0.tar.gz
+    && cd / && rm -rf /tmp/cppcheck-2.21.0 /tmp/2.21.0.tar.gz
 
-# --- Addon MISRA para cppcheck (version 2.14.0, coincide con la compilacion) ---
-RUN wget -q https://github.com/danmar/cppcheck/raw/2.14.0/addons/misra.py \
+# --- Addon MISRA para cppcheck (misma version 2.21.0 que la compilacion) ---
+RUN wget -q https://github.com/cppcheck-opensource/cppcheck/raw/2.21.0/addons/misra.py \
         -O /usr/share/cppcheck/addons/misra.py \
     && chmod +x /usr/share/cppcheck/addons/misra.py
 

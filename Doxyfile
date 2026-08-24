@@ -12,8 +12,9 @@ OPTIMIZE_OUTPUT_FOR_C  = YES
 JAVADOC_AUTOBRIEF      = YES
 QUIET                  = YES
 
-# Alias: @req -> sección de trazabilidad "Requisitos"
-ALIASES                = "req=\xrefitem requirement \"Requisito\" \"Requisitos\""
+# Alias: @requirement (y también @req por compatibilidad) -> sección "Requisitos"
+ALIASES                = "req=\xrefitem requirement \"Requisito\" \"Requisitos\"" \
+                         "requirement=\xrefitem requirement \"Requisito\" \"Requisitos\""
 
 # Extracción
 EXTRACT_ALL            = YES
