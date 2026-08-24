@@ -17,9 +17,10 @@
   :test:
     - +:test/**
   :source:
-    - ../Core/Src/**
+    - ../Core/User/Src/**
   :include:
     - ../Core/Inc/**
+    - ../Core/User/Inc/**
   :support:
     - test/support
 
@@ -52,6 +53,7 @@
     :executable: gcc
     :arguments:
       - -I"../Core/Inc"
+      - -I"../Core/User/Inc"
       - -I"test/support"
       - -I"build/vendor/unity/src"
       - -DUNITY_INCLUDE_DOUBLE

@@ -43,14 +43,21 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 # Add sources to executable
+# Todo el codigo de usuario vive en Core/User/Src (lo generado por CubeMX
+# queda en Core/Src y lo agrega cmake/stm32cubemx/CMakeLists.txt).
+# GLOB_RECURSE + CONFIGURE_DEPENDS incluye automaticamente cualquier
+# libreria/archivo nuevo sin editar este archivo.
+file(GLOB_RECURSE USER_SOURCES CONFIGURE_DEPENDS
+    Core/User/Src/*.c
+)
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
-    Core/Src/NEO_Config_uC.c
+    ${USER_SOURCES}
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/User/Inc
 )
 
 # Add project symbols (macros)

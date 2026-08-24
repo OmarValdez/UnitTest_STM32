@@ -17,8 +17,8 @@ cd /work
 
 mkdir -p build/coverage
 gcovr --root . \
-      --object-directory tests/build/test/out/test_led_logic \
-      --filter Core/Src \
+       --object-directory tests/build/test/out/test_led_logic \
+       --filter Core/User/Src \
       --gcov-executable gcov \
       --print-summary \
       --html=build/coverage/index.html --html-details \
