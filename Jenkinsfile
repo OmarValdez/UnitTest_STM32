@@ -24,6 +24,15 @@ pipeline {
             }
         }
 
+        stage('Normalizar scripts (CRLF -> LF)') {
+            steps {
+                // El agente Windows puede dejar los .sh con CRLF en disco; el
+                // checkout no siempre los reescribe. Sed del contenedor quita
+                // el \r para que bash no falle (p.ej. "set -o pipefail\r").
+                bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash -c "sed -i \'s/\\r$//\' /work/ci/*.sh"'
+            }
+        }
+
         stage('Full Build & Simulation') {
             stages {
                 stage('Compile Firmware') {
