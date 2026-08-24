@@ -4,7 +4,10 @@
 set -euo pipefail
 
 cd tests
-bundle install
+# BUNDLE_FROZEN=true: usa Gemfile.lock commiteado y NO lo reescribe (evita
+# "Permission denied" al intentar escribir sobre el bind-mount 9p).
+# En Bundler 4.x el flag --frozen fue removido; se usa la variable de entorno.
+BUNDLE_FROZEN=true bundle install
 bundle exec ceedling test:all --project project_ci.yml
 if [ $? -ne 0 ]; then
     echo "❌ Ceedling fallo al ejecutar las pruebas"

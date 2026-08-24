@@ -62,9 +62,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && cd / && rm -rf /tmp/cppcheck-2.21.0 /tmp/2.21.0.tar.gz
 
 # --- Ceedling / Unity (se hornean las gemas en la imagen) ---
+# Se fija la version de Bundler para reproducibilidad (debe coincidir con
+# BUNDLED WITH en Gemfile.lock).
 WORKDIR /gemsbuild
 COPY Gemfile ./
-RUN gem install bundler \
+RUN gem install bundler -v 4.0.19 \
     && bundle install \
     && rm -rf /gemsbuild
 

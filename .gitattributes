@@ -8,6 +8,7 @@ Jenkinsfile text eol=lf
 *.yml text eol=lf
 *.json text eol=lf
 Gemfile text eol=lf
+Gemfile.lock text eol=lf
 *.py text eol=lf
 
 *.bat text eol=crlf
