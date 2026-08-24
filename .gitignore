@@ -40,6 +40,10 @@ docs/latex/
 # ANÁLISIS ESTÁTICO
 build/static/
 
+# Texto de reglas MISRA (material con licencia CC BY-NC-ND; no se versiona)
+config/misra.txt
+
+
 # ARCHIVOS DE IDE
 .vscode/
 .idea/

@@ -1,5 +1,6 @@
 # Doxyfile para documentación del proyecto SW (IEC 62304)
-# Los requisitos se documentan en el código con el tag @req.
+# Los requisitos se documentan en el código con el tag @req, que se mapea a
+# una sección dedicada de trazabilidad ("Requisitos") mediante \xrefitem.
 
 PROJECT_NAME           = "ST_UnitTest (Piloto IEC 62304)"
 PROJECT_NUMBER         = 0.1
@@ -10,21 +11,33 @@ CREATE_SUBDIRS         = NO
 OPTIMIZE_OUTPUT_FOR_C  = YES
 JAVADOC_AUTOBRIEF      = YES
 QUIET                  = YES
-WARNINGS               = NO
 
-# Alias propio para requisitos (trazabilidad)
-ALIASES                = "req{1}=@par Requisito\n\1"
+# Alias: @req -> sección de trazabilidad "Requisitos"
+ALIASES                = "req=\xrefitem requirement \"Requisito\" \"Requisitos\""
 
 # Extracción
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = YES
 HIDE_UNDOC_MEMBERS     = NO
-WARN_IF_UNDOCUMENTED   = NO
+
+# Advertencias (útil para IEC 62304: el código debe estar documentado)
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_AS_ERROR          = NO
+WARN_LOGFILE           = docs/doxygen_warnings.log
 
 INPUT                  = Core/Src Core/Inc
 RECURSIVE              = YES
 FILE_PATTERNS          = *.c *.h
+
+# Excluir código generado por CubeMX / vendor (no es del equipo)
+EXCLUDE                = Core/Src/sysmem.c \
+                         Core/Src/syscalls.c \
+                         Core/Src/stm32f1xx_hal_msp.c \
+                         Core/Src/system_stm32f1xx.c \
+                         Core/Inc/stm32f1xx_hal_conf.h
 
 # Generadores
 GENERATE_HTML          = YES
@@ -33,6 +46,7 @@ GENERATE_LATEX         = NO
 GENERATE_XML           = YES
 XML_OUTPUT             = xml
 
-# Lenguaje
-OPTIMIZE_FOR_FORTRAN   = NO
-EXTENSION_MAPPING      = .c=C .h=C
+HAVE_DOT               = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+SOURCE_BROWSER         = YES

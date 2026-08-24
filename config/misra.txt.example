@@ -1,0 +1,19 @@
+# =============================================================================
+# Plantilla de texto de reglas MISRA-C para cppcheck
+# =============================================================================
+#
+# El analisis MISRA-C de cppcheck requiere el "Guideline Headlines" oficial de
+# MISRA, que se proporciona como cortesia para usarse con cppcheck bajo
+# licencia CC BY-NC-ND 4.0 (ver cabecera del archivo original).
+#
+# PASOS:
+#   1. Descarga el archivo oficial desde el repositorio de MISRA:
+#      https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools/-/blob/main/misra_c_2012__headlines_for_cppcheck%20-%20AMD1+AMD2.txt
+#   2. Guardalo en ESTA carpeta como:  config/misra.txt
+#      (el Dockerfile y ci/static_analysis.sh lo leen desde ahi)
+#   3. El pipeline activara MISRA-C automaticamente al encontrarlo.
+#
+# NOTA DE LICENCIA: el texto esta bajo CC BY-NC-ND 4.0 (no comercial).
+# Verificar con el area legal si aplica para el uso comercial del dispositivo.
+# Mientras no exista config/misra.txt, el pipeline ejecuta cppcheck base
+# (sin MISRA) de forma degradada, sin fallar.
