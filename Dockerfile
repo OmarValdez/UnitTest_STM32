@@ -1,6 +1,7 @@
 # Entorno reproducible para el pipeline de firmware (IEC 62304 piloto)
-# Base ruby:3.2-slim (Debian bookworm) => Ruby 3.2 (requerido por Ceedling/erb)
-FROM ruby:3.2-slim
+# Base ruby:3.2-slim-bookworm (Debian 12) => Ruby 3.2 (requerido por Ceedling/erb)
+# Se fija la distro (bookworm) para no depender del tag flotante ni de trixie.
+FROM ruby:3.2-slim-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
