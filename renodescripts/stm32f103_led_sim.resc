@@ -12,7 +12,7 @@ machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
 # 3. DEFINIR LED Y BOTÓN (usando los nombres que funcionaron)
 machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
-machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12 }"
+machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12"
 
 # 4. CARGAR FIRMWARE
 $bin?=@../build/DockerDebug/ST_UnitTest.elf
