@@ -24,7 +24,6 @@
 /* USER CODE BEGIN Includes */
 #include "NEO_Config_uC.h"
 #include "led_logic.h"
-#include "utilities.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,13 +100,6 @@ int main(void)
 
   /* USER CODE END 2 */
   led_logic_init();
-
-  /* USER CODE BEGIN 2 */
-  /* Uso de la libreria de ejemplo para forzar su enlace (alternativa a GLOB). */
-  volatile uint32_t demo_lib = utilities_add(2U, 3U);
-  (void)demo_lib;
-  /* USER CODE END 2 */
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while(1){

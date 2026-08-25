@@ -37,20 +37,6 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
-# ---------------------------------------------------------------------------
-# Libreria de usuario (alternativa robusta a GLOB_RECURSE)
-# CMake compila explicitamente los .c listados y expone sus headers via
-# target_include_directories(PUBLIC), asi que el ejecutable (y otras
-# librerias) los ven sin configuracion extra. Agregar un archivo nuevo
-# aqui requiere listarlo, pero el build es 100% reproducible.
-# ---------------------------------------------------------------------------
-add_library(utilities STATIC
-    Core/Libs/Utilities/Src/utilities.c
-)
-target_include_directories(utilities PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Libs/Utilities/Inc
-)
-
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
@@ -85,7 +71,6 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
-    utilities
 
     # Add user defined libraries
 )
