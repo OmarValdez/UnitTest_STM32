@@ -71,9 +71,10 @@ for f in "${EXCLUDES[@]}"; do LIZ_EXTRA+=("-x" "$f"); done
 # Reporte legible para revision rapida (umbral CCN > 10, longitud > 50)
 lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 \
     > build/static/complexity.txt 2>&1 || true
-# XML (formato cppncss) para el dashboard. Sin -m: en un checkout limpio
-# -m (solo funciones modificadas) no emite nada y deja complexity.xml vacio.
-lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 -X \
+# XML (formato cppncss) para integracion con Jenkins. Se usa --xml (forma
+# larga, estable entre versiones) en lugar de -X. El dashboard parsea el
+# reporte de texto (complexity.txt), que es mas robusto.
+lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 --xml \
     > build/static/complexity.xml 2>&1 || true
 
 # --- Analisis de seguridad de codigo (flawfinder) ---

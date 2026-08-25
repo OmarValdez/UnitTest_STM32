@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Genera un reporte HTML unificado de analisis estatico a partir de
-cppcheck.xml, complexity.xml (lizard) y flawfinder.html.
+cppcheck.xml, complexity.txt (reporte texto de lizard) y flawfinder.html.
 
 Objetivo: presentar los hallazgos de forma navegable y estructurada
 (cppcheck, MISRA-C, complejidad, flawfinder) en lugar de dejarlos como
@@ -14,7 +14,7 @@ import re
 STATIC = "build/static"
 OUT = os.path.join(STATIC, "index.html")
 CPPCHECK = os.path.join(STATIC, "cppcheck.xml")
-COMPLEXITY = os.path.join(STATIC, "complexity.xml")
+COMPLEXITY = os.path.join(STATIC, "complexity.txt")
 FLAWFINDER = os.path.join(STATIC, "flawfinder.html")
 
 cpp_style = []
@@ -42,36 +42,35 @@ if os.path.exists(CPPCHECK):
 complex_funcs = []
 if os.path.exists(COMPLEXITY):
     try:
-        root = ET.parse(COMPLEXITY).getroot()
-        # lizard --xml genera formato "cppncss":
-        # <cppncss><measure type="Function">
-        #   <item name="func(...) at archivo:linea">
-        #     <value>NR</value><value>NCSS</value><value>CCN</value>...
-        #   </item></measure>...
-        func_measure = None
-        for m in root.iter("measure"):
-            if m.get("type") == "Function":
-                func_measure = m
-                break
-        if func_measure is not None:
-            for item in func_measure.iter("item"):
-                name_attr = item.get("name", "")
-                mm = re.match(r"^(.*?)\(.*?\)\s+at\s+(.+?):(\d+)\s*$", name_attr)
-                if not mm:
+        data = open(COMPLEXITY, encoding="utf-8", errors="ignore").read()
+        # Formato texto de lizard (estable entre versiones):
+        #   NLOC  CCN  token  PARAM  length  location
+        #   <n>   <ccn> <tok>  <par>  <len>   nombre@inicio-fin@archivo
+        # (versiones antiguas usan "nombre  archivo:linea")
+        for line in data.splitlines():
+            m = re.match(
+                r"^\s*(?:!>\s*)?\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+"
+                r"(\S+?)@(\d+)-(\d+)@(.+?)\s*$",
+                line)
+            if m:
+                ccn = int(m.group(1))
+                func_name = m.group(2)
+                line_no = m.group(3)
+                fname = m.group(5)
+            else:
+                m2 = re.match(
+                    r"^\s*(?:!>\s*)?\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+"
+                    r"(\S+)\s+(\S+?):(\d+)\s*$",
+                    line)
+                if not m2:
                     continue
-                func_name = mm.group(1)
-                fname = mm.group(2)
-                line = mm.group(3)
-                values = [v.text for v in item.iter("value")]
-                ccn = None
-                if len(values) >= 3:
-                    try:
-                        ccn = int(values[2])
-                    except (ValueError, TypeError):
-                        ccn = None
-                if ccn is not None and ccn > 10:
-                    complex_funcs.append((func_name, fname, line, ccn))
-    except ET.ParseError as ex:
+                ccn = int(m2.group(1))
+                func_name = m2.group(2)
+                fname = m2.group(3)
+                line_no = m2.group(4)
+            if ccn > 10:
+                complex_funcs.append((func_name, fname, line_no, ccn))
+    except Exception as ex:
         complex_funcs.append(("parse error: %s" % ex, "", "", 0))
 
 ff_hits = 0
@@ -150,7 +149,8 @@ html_doc = """<!DOCTYPE html>
 <h2>Archivos crudos</h2>
 <ul>
  <li><a href="cppcheck.xml">cppcheck.xml</a></li>
- <li><a href="complexity.xml">complexity.xml (lizard, cppncss)</a></li>
+ <li><a href="complexity.txt">complexity.txt (reporte lizard)</a></li>
+ <li><a href="complexity.xml">complexity.xml (cppncss crudo, Jenkins)</a></li>
  <li><a href="flawfinder.html">flawfinder.html</a> (resultado de flawfinder)</li>
 </ul>
 </body></html>
