@@ -6,26 +6,30 @@ static bool mock_queue[MOCK_QUEUE_MAX];
 static int  mock_count = 0;   /* number of queued expectations */
 static int  mock_index = 0;   /* next value to return          */
 
+/* Registro de llamadas a hal_gpio_write_led */
+static bool mock_write_led_last = false;
+static int  mock_write_led_count = 0;
+
 void mock_led_logic_reset(void)
 {
     mock_count = 0;
     mock_index = 0;
+    mock_write_led_last = false;
+    mock_write_led_count = 0;
 }
 
 void hal_gpio_write_led(bool estado)
 {
-    (void)estado; /* stub: nothing to do in the host/sim environment */
+    /* stub que registra la llamada para poder verificarla en el test */
+    mock_write_led_last = estado;
+    mock_write_led_count++;
 }
 
 void hal_gpio_read_boton_ExpectAndReturn(bool valor)
 {
-    /* If the previous expectation sequence was fully consumed, start a new one.
-       This keeps the mock stateless across separate tests. */
-    if (mock_index >= mock_count)
-    {
-        mock_led_logic_reset();
-    }
-
+    /* Solo encola. El estado limpio se garantiza con mock_led_logic_reset()
+       (llamado desde setUp) antes de cada test; asi no se borra el registro
+       de escrituras a hal_gpio_write_led en medio de un test. */
     if (mock_count < MOCK_QUEUE_MAX)
     {
         mock_queue[mock_count] = valor;
@@ -47,4 +51,14 @@ bool hal_gpio_read_boton(void)
     }
 
     return mock_queue[mock_index++];
+}
+
+bool mock_hal_gpio_write_led_last(void)
+{
+    return mock_write_led_last;
+}
+
+int mock_hal_gpio_write_led_count(void)
+{
+    return mock_write_led_count;
 }
