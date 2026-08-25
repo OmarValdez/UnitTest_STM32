@@ -68,16 +68,6 @@ void Error_Handler(void);
 // Boton configurado para activarse al recibir un 0 o GND
 #define BUTTON1_PORT	BOTON_PIN_GPIO_Port   // GPIOB
 #define BUTTON1_PIN		BOTON_PIN_Pin         // GPIO_PIN_12
-// Sensor de calidad de aire
-#define I2C_A			&hi2c2
-#define I2C_A_TIMOUT	5 //ms
-#define	I2C_ADDR_ENS160	0x52<<1 //ADDR=GND
-#define IS_ENS160_CONNECT(PART_ID)	(PART_ID == 0x0160)
-
-// Sensor de humedad
-#define	I2C_ADDR_AHT21	0x38
-
-
 
 /* USER CODE END Private defines */
 
