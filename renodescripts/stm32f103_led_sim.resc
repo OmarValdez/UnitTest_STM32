@@ -27,7 +27,7 @@ logLevel -1 gpioPortC.led
 logLevel -1 gpioPortB.boton
 
 # Logs adicionales para ver actividad
-sysbus LogAllPeripheralsAccess true
+:sysbus LogAllPeripheralsAccess true
 
 # 6. SIMULACIÓN CON PRUEBAS
 
@@ -38,28 +38,28 @@ start
 sleep 1
 
 # Secuencia de pruebas
-sysbus FindSymbolAt `sysbus.cpu PC`
+:sysbus FindSymbolAt `sysbus.cpu PC`
 echo "🟢 Presionando botón 1..."
 gpioPortB.boton PressAndRelease
 echo "🟢 Estado del LED:"
 gpioPortC.led State
 sleep 0.5
 
-sysbus FindSymbolAt `sysbus.cpu PC`
+:sysbus FindSymbolAt `sysbus.cpu PC`
 echo "🟢 Presionando botón 2..."
 gpioPortB.boton PressAndRelease
 echo "🟢 Estado del LED:"
 gpioPortC.led State
 sleep 0.5
 
-sysbus FindSymbolAt `sysbus.cpu PC`
+:sysbus FindSymbolAt `sysbus.cpu PC`
 echo "🟢 Presionando botón 3..."
 gpioPortB.boton PressAndRelease
 echo "🟢 Estado del LED:"
 gpioPortC.led State
 sleep 0.5
 
-sysbus FindSymbolAt `sysbus.cpu PC`
+:sysbus FindSymbolAt `sysbus.cpu PC`
 # Verificar estado final del LED
 echo ""
 echo "🟢 Estado final del LED:"
@@ -70,6 +70,6 @@ echo "======================================================"
 echo "🟢 SIMULACION FINALIZADA"
 echo "======================================================"
 
-sysbus FindSymbolAt `sysbus.cpu PC`
+:sysbus FindSymbolAt `sysbus.cpu PC`
 
 quit
