@@ -73,13 +73,24 @@ if os.path.exists(COMPLEXITY):
     except Exception as ex:
         complex_funcs.append(("parse error: %s" % ex, "", "", 0))
 
-ff_hits = 0
+ff_hits_list = []
 if os.path.exists(FLAWFINDER):
     try:
         data = open(FLAWFINDER, encoding="utf-8", errors="ignore").read()
-        ff_hits = data.count("[Hits]")
+        # Cada hallazgo: <li>archivo:linea: <b> [riesgo] </b> (cat) <i> nombre: desc </i>
+        pat = re.compile(
+            r"<li>(.*?:\d+):\s*<b>\s*\[(\d+)\]\s*</b>\s*\((.*?)\)\s*<i>\s*(.*?):\s*(.*?)</i>",
+            re.S)
+        for m in pat.finditer(data):
+            loc = m.group(1).strip()
+            risk = int(m.group(2))
+            cat = m.group(3).strip()
+            name = m.group(4).strip()
+            desc = re.sub(r"<[^>]+>", "", m.group(5)).strip()
+            ff_hits_list.append((loc, risk, cat, name, desc))
     except Exception:
-        ff_hits = 0
+        ff_hits_list = []
+ff_hits = len(ff_hits_list)
 
 
 def esc(s):
@@ -105,6 +116,12 @@ rows_cx = "".join(
     for (n, f, l, c) in complex_funcs) or \
     "<tr><td colspan='4'>Sin funciones con CCN &gt; 10</td></tr>"
 
+rows_ff = "".join(
+    "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+        esc(loc), esc(risk), esc(cat), esc(name), esc(desc))
+    for (loc, risk, cat, name, desc) in ff_hits_list) or \
+    "<tr><td colspan='5'>Sin hallazgos de flawfinder (nivel &gt;= 3)</td></tr>"
+
 html_doc = """<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <title>Reporte de Analisis Estatico</title>
@@ -115,24 +132,47 @@ html_doc = """<!DOCTYPE html>
  th,td{{border:1px solid #ccc;padding:4px 8px;text-align:left;vertical-align:top;}}
  th{{background:#eef;}}
  .summary{{background:#f4f7fb;border:1px solid #cdd;padding:1em;border-radius:6px;}}
+ .note{{background:#fbfbf2;border-left:4px solid #d9c64a;padding:.6em 1em;margin:.6em 0;color:#444;}}
  .meta{{color:#667;font-size:.9em;}}
  a{{color:#06c;}}
  .ok{{color:#285;}}
 </style></head><body>
 <h1>Reporte de Analisis Estatico</h1>
+<p class="note">Este reporte consolida <b>cuatro analisis estaticos</b> del
+codigo fuente (se analiza sin ejecutarlo), orientados a calidad, seguridad y
+cumplimiento para firmware embebido (IEC 62304). <b>Ningun hallazgo bloquea el
+pipeline</b>: el equipo debe revisarlos y reducirlos progresivamente. Los
+archivos crudos estan enlazados al final para auditoria.</p>
+
 <div class="summary">
  <p><b>Resumen</b></p>
  <ul>
   <li>cppcheck / estilo: <b>{n_cpp}</b> hallazgos</li>
   <li>MISRA-C: <b>{n_misra}</b> violaciones (reporte, no bloquea)</li>
   <li>Complejidad (lizard, CCN &gt; 10): <b>{n_cx}</b> funciones</li>
-  <li>flawfinder: <b>~{n_ff}</b> hallazgos (ver archivo enlazado)</li>
+  <li>flawfinder (seguridad, nivel &gt;= 3): <b>{n_ff}</b> hallazgos</li>
   <li>Total cppcheck + MISRA: <b>{n_total}</b></li>
  </ul>
- <p class="meta">Reporte consolidado de cppcheck, MISRA-C, lizard y flawfinder.
- Las violaciones MISRA-C se listan por separado de los hallazgos de cppcheck/estilo.
- Los archivos crudos estan enlazados abajo para trazabilidad (IEC 62304).</p>
 </div>
+
+<h2>Qué significa cada analisis</h2>
+<ul>
+ <li><b>cppcheck / estilo</b>: revisa errores, estilo, portabilidad y rendimiento
+  (p. ej. variables no inicializadas, conversiones peligrosas, fugas). Un
+  <i>warning</i> suele ser un bug potencial; <i>style</i> apunta a practicas que
+  dificultan el mantenimiento. No todos son errores, pero conviene revisarlos.</li>
+ <li><b>MISRA-C:2012</b>: conjunto de reglas de codificacion segura para C en
+  sistemas embebidos (automocion, medical). Cada violacion es una desviacion de
+  la guia; para IEC 62304 se documentan y justifican en el QMS. Las supresiones
+  autorizadas estan en <code>tools/cppcheck/misra_suppressions.txt</code>.</li>
+ <li><b>Complejidad ciclomatica (lizard)</b>: el CCN cuenta los caminos
+  independientes de una funcion. A mayor CCN, mas casos de prueba necesarios y
+  mayor probabilidad de defectos. Por convencion, <b>CCN &gt; 10</b> indica una
+  funcion dificil de probar/mantener y candidata a refactorizar.</li>
+ <li><b>flawfinder</b>: escaneo de seguridad que busca funciones C/C++ peligrosas
+  (p. ej. <code>strcpy</code>, <code>gets</code>) y patrones de desbordamiento de
+  buffer. El "Riesgo" va de 1 (bajo) a 5 (alto); aqui se reporta nivel &gt;= 3.</li>
+</ul>
 
 <h2>cppcheck / estilo</h2>
 <table><thead><tr><th>Archivo</th><th>Linea</th><th>ID</th><th>Severidad</th><th>Mensaje</th></tr></thead>
@@ -143,8 +183,20 @@ html_doc = """<!DOCTYPE html>
 <tbody>{rows_misra}</tbody></table>
 
 <h2>Complejidad ciclomatica (lizard, CCN &gt; 10)</h2>
+<p class="note">Funciones cuya complejidad supera el umbral. Se recomienda
+dividirlas en funciones mas pequenas y con un solo proposito para facilitar
+pruebas y reducir el riesgo de defectos.</p>
 <table><thead><tr><th>Funcion</th><th>Archivo</th><th>Linea</th><th>CCN</th></tr></thead>
 <tbody>{rows_cx}</tbody></table>
+
+<h2>Analisis de seguridad (flawfinder)</h2>
+<p class="note">Cada hallazgo es una funcion potencialmente insegura. El nivel de
+riesgo (1-5) orienta la prioridad: revision inmediata para los de mayor riesgo.
+No todo hallazgo es una vulnerabilidad real, pero debe revisarse y, si aplica,
+sustituirse por una alternativa segura (p. ej. <code>snprintf</code> en lugar de
+<code>strcpy</code>).</p>
+<table><thead><tr><th>Ubicacion</th><th>Riesgo</th><th>Categoria</th><th>Funcion</th><th>Descripcion</th></tr></thead>
+<tbody>{rows_ff}</tbody></table>
 
 <h2>Archivos crudos</h2>
 <ul>
@@ -158,7 +210,7 @@ html_doc = """<!DOCTYPE html>
            n_cx=len(complex_funcs), n_ff=ff_hits,
            n_total=len(cpp_style) + len(misra_errors),
            rows_cpp_style=rows_cpp_style, rows_misra=rows_misra,
-           rows_cx=rows_cx)
+           rows_cx=rows_cx, rows_ff=rows_ff)
 
 with open(OUT, "w", encoding="utf-8") as fh:
     fh.write(html_doc)

@@ -74,8 +74,11 @@ lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 \
 # XML (formato cppncss) para integracion con Jenkins. Se usa --xml (forma
 # larga, estable entre versiones) en lugar de -X. El dashboard parsea el
 # reporte de texto (complexity.txt), que es mas robusto.
-lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 --xml \
-    > build/static/complexity.xml 2>&1 || true
+# Se filtra la linea 'xml-stylesheet' para que el navegador muestre el XML como
+# arbol legible; si se deja, el navegador intenta aplicar la XSL remota y la
+# pagina aparece en blanco al hacer clic desde el reporte.
+lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 --xml 2>/dev/null \
+    | grep -v "xml-stylesheet" > build/static/complexity.xml || true
 
 # --- Analisis de seguridad de codigo (flawfinder) ---
 echo "flawfinder..."
