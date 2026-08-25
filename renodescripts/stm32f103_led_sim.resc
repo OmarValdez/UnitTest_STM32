@@ -1,75 +1,59 @@
 # ============================================================
-# SCRIPT PARA STM32F103CBT6 - OPTIMIZADO PARA CI/CD
+# STM32F103CBT6 - BluePill
+# System integration test (Renode)
+#
+# Verifica la logica boton -> LED de forma equivalente a
+# tests/test/test_led_logic.c, pero sobre el micro real modelado:
+#   - Boton en PB12, activo-bajo (presionar = pin a GND = 0),
+#     emulado con Miscellaneous.Button { IRQ -> gpioPortB@12; invert: true }
+#   - LED en PC13, activo-bajo (encender = pin a GND = 0).
+#   - La conmutacion se verifica leyendo el ODR de GPIOC:
+#       LED OFF -> PC13=1 (ODR 0x2000)
+#       LED ON  -> PC13=0 (ODR 0x0000)
 # ============================================================
 
 using sysbus
 
-# 1. CREAR MÁQUINA
 mach create "stm32f103"
-
-# 2. CARGAR PLATAFORMA
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
 
-# 3. DEFINIR LED Y BOTÓN (usando los nombres que funcionaron)
+# LED (salida, activo-bajo en BluePill) y boton (entrada, activo-bajo).
 machine LoadPlatformDescriptionFromString "led: Miscellaneous.LED @ gpioPortC 13"
-machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12"
+machine LoadPlatformDescriptionFromString "boton: Miscellaneous.Button @ gpioPortB 12 { IRQ -> gpioPortB@12; invert: true }"
 
-# 4. CARGAR FIRMWARE
 $bin?=@../build/DockerDebug/ST_UnitTest.elf
 sysbus LoadELF $bin
-echo "✅ Firmware cargado correctamente"
+echo "Firmware cargado"
 
-# Detectar el Error_Handler
-cpu AddHook `sysbus GetSymbolAddress "Error_Handler"` "cpu.ErrorLog('⛔ Error_Handler alcanzado en @ {0}', monitor.Machine.ElapsedVirtualTime.TimeElapsed)"
+# Detectar caida en Error_Handler (fallo de arranque/inicializacion).
+cpu AddHook `sysbus GetSymbolAddress "Error_Handler"` "cpu.ErrorLog('ERROR: Error_Handler alcanzado en @ {0}', monitor.Machine.ElapsedVirtualTime.TimeElapsed)"
 
-# 5. LOGS PARA DEPURACIÓN
-logLevel -1 gpioPortC.led
-logLevel -1 gpioPortB.boton
-
-# Logs adicionales para ver actividad
-:sysbus LogAllPeripheralsAccess true
-
-# 6. SIMULACIÓN CON PRUEBAS
+macro press
+"""
+    gpioPortB.boton Press
+    sleep 0.3
+    gpioPortB.boton Release
+    sleep 0.1
+"""
 
 start
-
-:sysbus FindSymbolAt `sysbus.cpu PC`
-# Esperar a que el firmware se estabilice
 sleep 1
 
-# Secuencia de pruebas
-:sysbus FindSymbolAt `sysbus.cpu PC`
-echo "🟢 Presionando botón 1..."
-gpioPortB.boton PressAndRelease
-echo "🟢 Estado del LED:"
-gpioPortC.led State
-sleep 0.5
+# led_logic_init() deja el LED apagado -> PC13=1 -> ODR 0x2000
+echo "ODR PC13 inicial (esperado 0x2000 = LED OFF):"
+sysbus ReadDoubleWord 0x4001100C
 
-:sysbus FindSymbolAt `sysbus.cpu PC`
-echo "🟢 Presionando botón 2..."
-gpioPortB.boton PressAndRelease
-echo "🟢 Estado del LED:"
-gpioPortC.led State
-sleep 0.5
+echo "Presion boton 1 (esperado LED ON -> ODR 0x0000):"
+runMacro $press
+sysbus ReadDoubleWord 0x4001100C
 
-:sysbus FindSymbolAt `sysbus.cpu PC`
-echo "🟢 Presionando botón 3..."
-gpioPortB.boton PressAndRelease
-echo "🟢 Estado del LED:"
-gpioPortC.led State
-sleep 0.5
+echo "Presion boton 2 (esperado LED OFF -> ODR 0x2000):"
+runMacro $press
+sysbus ReadDoubleWord 0x4001100C
 
-:sysbus FindSymbolAt `sysbus.cpu PC`
-# Verificar estado final del LED
-echo ""
-echo "🟢 Estado final del LED:"
-gpioPortC.led State
+echo "Presion boton 3 (esperado LED ON -> ODR 0x0000):"
+runMacro $press
+sysbus ReadDoubleWord 0x4001100C
 
-echo ""
-echo "======================================================"
-echo "🟢 SIMULACION FINALIZADA"
-echo "======================================================"
-
-:sysbus FindSymbolAt `sysbus.cpu PC`
-
+echo "SIMULACION FINALIZADA"
 quit
