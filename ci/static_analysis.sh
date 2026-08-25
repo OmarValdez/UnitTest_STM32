@@ -68,8 +68,13 @@ fi
 echo "Complejidad ciclomatica (lizard)..."
 LIZ_EXTRA=()
 for f in "${EXCLUDES[@]}"; do LIZ_EXTRA+=("-x" "$f"); done
-lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 -m \
-    --xml > build/static/complexity.xml 2> build/static/complexity.txt || true
+# Reporte legible para revision rapida (umbral CCN > 10, longitud > 50)
+lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 \
+    > build/static/complexity.txt 2>&1 || true
+# XML (formato cppncss) para el dashboard. Sin -m: en un checkout limpio
+# -m (solo funciones modificadas) no emite nada y deja complexity.xml vacio.
+lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 -X \
+    > build/static/complexity.xml 2>&1 || true
 
 # --- Analisis de seguridad de codigo (flawfinder) ---
 echo "flawfinder..."
