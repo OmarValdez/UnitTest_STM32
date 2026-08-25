@@ -2,19 +2,24 @@ name: Pull Request Checks
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
+
+# Cancela ejecuciones obsoletas del mismo PR/ref para ahorrar recursos.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
   unit-tests:
+    name: Unit Tests + Coverage
     runs-on: ubuntu-latest
-    permissions:
-      checks: write
-      pull-requests: write
-      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -35,6 +40,24 @@ jobs:
           cd tests
           bundle exec ceedling test:all --project project_ci.yml
 
+      - name: Generate Coverage report (gcovr)
+        run: |
+          pip install gcovr
+          mkdir -p tests/build/coverage
+          gcovr --root . \
+                --filter Core/User/Src \
+                --print-summary \
+                --gcov-executable gcov \
+                --xml tests/build/coverage/coverage.xml \
+                --html tests/build/coverage/index.html --html-details
+
+      - name: Upload Coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/build/coverage/**
+
       - name: Publish Test Results
         uses: mikepenz/action-junit-report@v4
         if: always()
@@ -42,3 +65,33 @@ jobs:
           report_paths: 'tests/build/artifacts/test/*.xml'
           check_name: 'Unit Tests'
           fail_on_failure: true
+
+  static-analysis:
+    name: Static Analysis (cppcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name: Run cppcheck on Core/User (informational)
+        run: |
+          cppcheck --enable=warning,style,performance,portability \
+                   --std=c11 --language=c --error-exitcode=0 \
+                   -I Core/Inc -I Core/User/Inc \
+                   -i Core/Src \
+                   Core/User/Src 2> cppcheck.txt || true
+          cat cppcheck.txt
+
+      - name: Upload cppcheck log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cppcheck-report
+          path: cppcheck.txt
+
+# Nota de seguridad de cadena de suministro (IEC 62304 / SLSA):
+# Para endurecer el pipeline, fijar cada "uses:" a su commit SHA completo
+# (p.ej. actions/checkout@<sha>) en lugar de la etiqueta de version mayor.
