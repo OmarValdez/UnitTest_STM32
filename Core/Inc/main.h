@@ -31,7 +31,6 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "NEO_Config_uC.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

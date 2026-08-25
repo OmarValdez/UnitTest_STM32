@@ -13,12 +13,11 @@
 #define LED_LOGIC_H
 
 #include <stdbool.h>
-#include "NEO_Config_uC.h"
 
 /* ---- Abstraccion de hardware (HAL) del LED/boton ----
- * En el firmware estas funciones se implementan en led_logic.c y llaman a
- * NEO_GPIO_*. En las pruebas unitarias (host, con -DUNIT_TEST) se omiten y
- * las aporta el mock mock_led_logic.c. */
+ * En el firmware estas funciones se implementan en led_logic.c llamando
+ * directo al HAL de STM32. En pruebas unitarias (host, con -DUNIT_TEST)
+ * se omiten y las aporta el mock mock_led_logic.c. */
 void hal_gpio_write_led(bool estado);
 bool hal_gpio_read_boton(void);
 

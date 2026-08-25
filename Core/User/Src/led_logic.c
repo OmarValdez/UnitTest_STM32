@@ -17,23 +17,24 @@ static bool estado_led = false;
 static bool boton_anterior = false;
 
 /* ---- Abstracción de hardware ----
- * En el firmware (build normal) estas funciones llaman al HAL real.
- * En pruebas unitarias (host, con -DUNIT_TEST) se omiten y las aporta
- * el mock mock_led_logic.c, evitando tirar del HAL y el conflicto de simbolos. */
+ * En el firmware (build normal) estas funciones llaman directo al HAL de
+ * STM32. En pruebas unitarias (host, con -DUNIT_TEST) se omiten y las
+ * aporta el mock mock_led_logic.c, evitando tirar del HAL y el conflicto
+ * de simbolos. */
 #ifndef UNIT_TEST
+#include "main.h"
+
 void hal_gpio_write_led(bool estado) {
     /* BluePill: el LED se enciende poniendo PC13 a GND (activo-bajo).
-     * estado == true  -> LED encendido -> pin a 0.
-     * estado == false -> LED apagado  -> pin a 1 (open-drain, sin corriente). */
-    NEO_GPIO_Write(LED1_PORT, LED1_PIN, estado ? 0u : 1u);
+     * estado == true  -> LED encendido -> pin a 0 (RESET).
+     * estado == false -> LED apagado  -> pin a 1 (SET, open-drain). */
+    HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, estado ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
 bool hal_gpio_read_boton(void) {
-    uint8_t state = 0u;
-    NEO_GPIO_Read(BUTTON1_PORT, BUTTON1_PIN, &state);
     /* BluePill: el boton envia GND al presionar y tiene pull-up, por lo que
-     * presionado == pin a nivel bajo (activo-bajo). */
-    return state == 0u;
+     * presionado == pin a nivel bajo (RESET, activo-bajo). */
+    return HAL_GPIO_ReadPin(BUTTON1_PORT, BUTTON1_PIN) == GPIO_PIN_RESET;
 }
 #endif /* UNIT_TEST */
 

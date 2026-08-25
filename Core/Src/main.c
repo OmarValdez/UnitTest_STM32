@@ -22,7 +22,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "NEO_Config_uC.h"
 #include "led_logic.h"
 /* USER CODE END Includes */
 
@@ -103,8 +102,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while(1){
-		//NEO_GPIO_Toggle(LED1_PORT, LED1_PIN);
-		//NEO_Delay_ms(delay_duration);
     led_logic_update();
     /* USER CODE END WHILE */
 
