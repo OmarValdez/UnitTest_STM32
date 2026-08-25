@@ -13,10 +13,7 @@
 #define LED_LOGIC_H
 
 #include <stdbool.h>
-
-/* ---- Abstracción de hardware (será mockeada en pruebas unitarias) ---- */
-void hal_gpio_write_led(bool estado);
-bool hal_gpio_read_boton(void);
+#include "NEO_Config_uC.h"
 
 /* ---- Lógica de la aplicación (independiente del microcontrolador) ---- */
 void led_logic_init(void);
