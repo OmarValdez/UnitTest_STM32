@@ -16,7 +16,11 @@
 static bool estado_led = false;
 static bool boton_anterior = false;
 
-/* ---- Abstracción de hardware (será mockeada en pruebas unitarias) ---- */
+/* ---- Abstracción de hardware ----
+ * En el firmware (build normal) estas funciones llaman al HAL real.
+ * En pruebas unitarias (host, con -DUNIT_TEST) se omiten y las aporta
+ * el mock mock_led_logic.c, evitando tirar del HAL y el conflicto de simbolos. */
+#ifndef UNIT_TEST
 void hal_gpio_write_led(bool estado) {
     /* BluePill: el LED se enciende poniendo PC13 a GND (activo-bajo).
      * estado == true  -> LED encendido -> pin a 0.
@@ -31,6 +35,7 @@ bool hal_gpio_read_boton(void) {
      * presionado == pin a nivel bajo (activo-bajo). */
     return state == 0u;
 }
+#endif /* UNIT_TEST */
 
 
 void led_logic_init(void) {

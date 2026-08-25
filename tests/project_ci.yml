@@ -31,6 +31,7 @@
 :defines:
   :test:
     - UNITY_INCLUDE_DOUBLE
+    - UNIT_TEST
   :release: []
 
 # CMock disabled: mocks are provided manually in test/support/
@@ -57,6 +58,7 @@
       - -I"test/support"
       - -I"build/vendor/unity/src"
       - -DUNITY_INCLUDE_DOUBLE
+      - -DUNIT_TEST
       - --coverage
       - -fprofile-abs-path
       - -c "${1}"

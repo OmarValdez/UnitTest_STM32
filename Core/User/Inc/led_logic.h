@@ -14,6 +14,7 @@
 
 #include <stdbool.h>
 #include "NEO_Config_uC.h"
+#include "hal_gpio.h"
 
 /* ---- Lógica de la aplicación (independiente del microcontrolador) ---- */
 void led_logic_init(void);

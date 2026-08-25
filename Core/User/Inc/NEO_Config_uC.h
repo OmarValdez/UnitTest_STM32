@@ -16,20 +16,35 @@
  */
 #ifndef ST_UNITTEST_CORE_INC_NEO_CONFIG_UC_H_
 #define ST_UNITTEST_CORE_INC_NEO_CONFIG_UC_H_
-#define	STM32
 
+#include <stdint.h>
 
+#define STM32
+
+#if !defined(UNIT_TEST)
+/* Build de firmware (CubeMX/arm): usa el HAL real del ST. */
 #ifdef STM32
 #include <main.h>
-#elif NXP
+#elif defined(NXP)
 #include "MKL46Z4.h"
 #include "PE_Types.h"
 #include "WAIT1.h"
 #include "BitIoLdd13.h"
 #define BitIoLdd13_DeviceData  ((LDD_TDeviceData *)PE_LDD_GetDeviceStructure(PE_LDD_COMPONENT_BitIoLdd13_ID))
-#elif Arduino
+#elif defined(Arduino)
 //todo Agregar librerias necesareias de arduino IDE
+#endif
 #else
+/* Build de pruebas unitarias en host (gcc/Ceedling): sin HAL.
+   Se proveen tipos y defines minimos para que led_logic.c compile y el
+   mock mock_led_logic.c aporte las funciones hal_gpio_*. */
+typedef struct GPIO_TypeDef GPIO_TypeDef;
+#ifndef LED1_PORT
+#define LED1_PORT      ((GPIO_TypeDef *)0)
+#define LED1_PIN       0U
+#define BUTTON1_PORT   ((GPIO_TypeDef *)0)
+#define BUTTON1_PIN    0U
+#endif
 #endif
 
 
