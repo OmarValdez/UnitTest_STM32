@@ -56,14 +56,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LED_G_Pin GPIO_PIN_13
+#define LED_G_GPIO_Port GPIOC
+#define BOTON_PIN_Pin GPIO_PIN_12
+#define BOTON_PIN_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 // Led configurado para encender con salida a open-drain
-#define LED1_PORT		GPIOC
-#define LED1_PIN		GPIO_PIN_13
+#define LED1_PORT		LED_G_GPIO_Port   // GPIOC
+#define LED1_PIN		LED_G_Pin         // GPIO_PIN_13
 // Boton configurado para activarse al recibir un 0 o GND
-#define BUTTON1_PORT	GPIOB
-#define BUTTON1_PIN		GPIO_PIN_12
+#define BUTTON1_PORT	BOTON_PIN_GPIO_Port   // GPIOB
+#define BUTTON1_PIN		BOTON_PIN_Pin         // GPIO_PIN_12
 // Sensor de calidad de aire
 #define I2C_A			&hi2c2
 #define I2C_A_TIMOUT	5 //ms
