@@ -109,13 +109,13 @@ pipeline {
                                  reportDir: 'docs/html', reportFiles: 'index.html', reportName: 'Doxygen'])
                 } catch (e) { echo "HTML Publisher plugin faltante para Doxygen: ${e}" }
                 try {
-                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true,
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                  reportDir: 'build/coverage', reportFiles: 'index.html', reportName: 'Coverage'])
                 } catch (e) { echo "HTML Publisher plugin faltante para Coverage: ${e}" }
                 try {
-                    publishHTML([allowMissing: true, alwaysLinkToLastBuild: true, keepAll: true,
-                                 reportDir: 'build/static', reportFiles: 'cppcheck.xml', reportName: 'Cppcheck'])
-                } catch (e) { echo "HTML Publisher plugin faltante para Cppcheck: ${e}" }
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                 reportDir: 'build/static', reportFiles: 'index.html', reportName: 'Static Analysis'])
+                } catch (e) { echo "HTML Publisher plugin faltante para Static Analysis: ${e}" }
             }
         }
         failure {

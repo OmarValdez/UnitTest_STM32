@@ -47,6 +47,14 @@ GENERATE_LATEX         = NO
 GENERATE_XML           = YES
 XML_OUTPUT             = xml
 
+# Navegacion sin JavaScript (treeview/search) para que el reporte publicado
+# en Jenkins (iframe + Content-Security-Policy estricto) sea navegable con
+# links HTML planos en lugar de depender de JS bloqueado por el CSP.
+DISABLE_INDEX          = YES
+GENERATE_TREEVIEW      = NO
+SEARCHENGINE           = NO
+SERVER_BASED_SEARCH    = NO
+
 HAVE_DOT               = YES
 CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
