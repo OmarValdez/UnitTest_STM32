@@ -82,7 +82,7 @@ lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 --xml 2>/dev/null \
 
 # --- Analisis de seguridad de codigo (flawfinder) ---
 echo "flawfinder..."
-flawfinder --quiet --minlevel=3 --context --html "$SRC" "$USERSRC" > build/static/flawfinder.html 2>&1 || true
+flawfinder --quiet --minlevel=1 --context --html "$SRC" "$USERSRC" > build/static/flawfinder.html 2>&1 || true
 
 # --- Reporte HTML unificado ---
 echo "Generando reporte HTML unificado..."

@@ -120,7 +120,7 @@ rows_ff = "".join(
     "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
         esc(loc), esc(risk), esc(cat), esc(name), esc(desc))
     for (loc, risk, cat, name, desc) in ff_hits_list) or \
-    "<tr><td colspan='5'>Sin hallazgos de flawfinder (nivel &gt;= 3)</td></tr>"
+    "<tr><td colspan='5'>Sin hallazgos de flawfinder (nivel &gt;= 1)</td></tr>"
 
 html_doc = """<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
@@ -150,7 +150,7 @@ archivos crudos estan enlazados al final para auditoria.</p>
   <li>cppcheck / estilo: <b>{n_cpp}</b> hallazgos</li>
   <li>MISRA-C: <b>{n_misra}</b> violaciones (reporte, no bloquea)</li>
   <li>Complejidad (lizard, CCN &gt; 10): <b>{n_cx}</b> funciones</li>
-  <li>flawfinder (seguridad, nivel &gt;= 3): <b>{n_ff}</b> hallazgos</li>
+  <li>flawfinder (seguridad, nivel &gt;= 1): <b>{n_ff}</b> hallazgos</li>
   <li>Total cppcheck + MISRA: <b>{n_total}</b></li>
  </ul>
 </div>
@@ -171,7 +171,7 @@ archivos crudos estan enlazados al final para auditoria.</p>
   funcion dificil de probar/mantener y candidata a refactorizar.</li>
  <li><b>flawfinder</b>: escaneo de seguridad que busca funciones C/C++ peligrosas
   (p. ej. <code>strcpy</code>, <code>gets</code>) y patrones de desbordamiento de
-  buffer. El "Riesgo" va de 1 (bajo) a 5 (alto); aqui se reporta nivel &gt;= 3.</li>
+  buffer. El "Riesgo" va de 1 (bajo) a 5 (alto); aqui se reporta nivel &gt;= 1.</li>
 </ul>
 
 <h2>cppcheck / estilo</h2>
