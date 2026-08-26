@@ -81,8 +81,19 @@ lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 --xml 2>/dev/null \
     | grep -v "xml-stylesheet" > build/static/complexity.xml || true
 
 # --- Analisis de seguridad de codigo (flawfinder) ---
+# Solo codigo de usuario: toda la carpeta Core/User/** mas los archivos
+# principales de aplicacion (Core/Src/main.c y Core/Inc/main.h). Se excluye
+# el resto de Core/Src/Core/Inc (p.ej. syscalls.c generado por CubeMX).
 echo "flawfinder..."
-flawfinder --quiet --minlevel=1 --context --html "$SRC" "$USERSRC" > build/static/flawfinder.html 2>&1 || true
+FF_FILES=()
+while IFS= read -r f; do [ -n "$f" ] && FF_FILES+=("$f"); done < <(find Core/User -type f 2>/dev/null || true)
+[ -f "Core/Src/main.c" ] && FF_FILES+=("Core/Src/main.c")
+[ -f "Core/Inc/main.h" ] && FF_FILES+=("Core/Inc/main.h")
+if [ ${#FF_FILES[@]} -gt 0 ]; then
+    flawfinder --quiet --minlevel=1 --context --html "${FF_FILES[@]}" > build/static/flawfinder.html 2>&1 || true
+else
+    echo "flawfinder: no se encontraron archivos de usuario para analizar" > build/static/flawfinder.html
+fi
 
 # --- Reporte HTML unificado ---
 echo "Generando reporte HTML unificado..."
