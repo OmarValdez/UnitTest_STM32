@@ -6,6 +6,16 @@ pipeline {
         timeout(time: 90, unit: 'MINUTES')
     }
 
+    // Dispara automaticamente ante cada push sin depender de webhooks de
+    // GitHub: como Jenkins queda en la LAN (IP privada), los webhooks de
+    // GitHub cloud no pueden alcanzarlo. El polling SCM hace que Jenkins
+    // consulte el repo periodicamente y construya al detectar cambios.
+    // Para cubrir CUALQUIER rama, configurar este job como Multibranch
+    // Pipeline con Branch Specifier "**" y Indexing periodico.
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
     stages {
         stage('Construir imagen Docker') {
             steps {
