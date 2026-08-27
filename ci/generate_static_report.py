@@ -201,6 +201,14 @@ sustituirse por una alternativa segura (p. ej. <code>snprintf</code> en lugar de
 <table><thead><tr><th>Ubicacion</th><th>Riesgo</th><th>Categoria</th><th>Funcion</th><th>Descripcion</th></tr></thead>
 <tbody>{rows_ff}</tbody></table>
 
+<h2>Trazabilidad de requisitos (IEC 62304)</h2>
+<p class="note">La trazabilidad requisito &rarr; c&oacute;digo &rarr; pruebas se genera con
+Doxygen a partir de la etiqueta <code>@requirement</code> (p. ej. ICN-SW-001/002/003).
+La p&aacute;gina <b>Requisitos</b> de la documentaci&oacute;n Doxygen agrupa cada
+requisito con su implementaci&oacute;n (<code>Core/User/Src/led_logic.c</code>) y sus
+pruebas unitarias (<code>tests/test/test_led_logic.c</code>). El spec can&oacute;nico
+est&aacute; en <code>requirements/requerimientos.md</code>.</p>
+
 <h2>Archivos crudos</h2>
 <ul>
  <li><a href="cppcheck.xml">cppcheck.xml</a></li>
