@@ -13,7 +13,7 @@ void setUp(void)
 /* ICN-SW-001: al iniciar el LED debe estar apagado y la HAL debe haber
  * recibido exactamente una escritura con valor false. */
 void test_led_logic_init_debe_apagar_led(void) {
-    TEST_ASSERT_FALSE(led_logic_get_estado());
+    TEST_ASSERT_TRUE(led_logic_get_estado());  /* ROTO A PROPOSITO: verificar gate de merge */
     TEST_ASSERT_EQUAL(1, mock_hal_gpio_write_led_count());
     TEST_ASSERT_FALSE(mock_hal_gpio_write_led_last());
 }
