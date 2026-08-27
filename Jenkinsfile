@@ -175,7 +175,7 @@ pipeline {
                 try {
                     githubNotify(status: 'SUCCESS', context: 'jenkins/ci',
                                   description: 'Jenkins build OK')
-                } catch (e) { echo "githubNotify no configurado (omitiendo): ${e}" }
+                } catch (Throwable t) { echo "githubNotify no disponible (omitiendo): ${t}" }
             }
         }
         failure {
@@ -184,7 +184,7 @@ pipeline {
                 try {
                     githubNotify(status: 'FAILURE', context: 'jenkins/ci',
                                   description: 'Jenkins build fallo')
-                } catch (e) { echo "githubNotify no configurado (omitiendo): ${e}" }
+                } catch (Throwable t) { echo "githubNotify no disponible (omitiendo): ${t}" }
             }
         }
     }
