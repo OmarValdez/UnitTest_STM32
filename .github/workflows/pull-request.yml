@@ -2,7 +2,6 @@ name: Pull Request Checks
 
 on:
   pull_request:
-  push:
 
 # Cancela ejecuciones obsoletas del mismo PR/ref para ahorrar recursos.
 concurrency:
@@ -16,7 +15,7 @@ permissions:
 
 jobs:
   unit-tests:
-    name: Unit Tests + Coverage
+    name: unit-tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -65,7 +64,7 @@ jobs:
           fail_on_failure: true
 
   static-analysis:
-    name: Static Analysis (cppcheck)
+    name: static-analysis
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
