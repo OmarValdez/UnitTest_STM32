@@ -206,8 +206,8 @@ sustituirse por una alternativa segura (p. ej. <code>snprintf</code> en lugar de
 Doxygen a partir de la etiqueta <code>@requirement</code> (p. ej. ICN-SW-001/002/003).
 La p&aacute;gina <b>Requisitos</b> de la documentaci&oacute;n Doxygen agrupa cada
 requisito con su implementaci&oacute;n (<code>Core/User/Src/led_logic.c</code>) y sus
-pruebas unitarias (<code>tests/test/test_led_logic.c</code>). El spec can&oacute;nico
-est&aacute; en <code>requirements/requerimientos.md</code>.</p>
+pruebas unitarias (<code>tests/test/test_led_logic.c</code>). Los Requerimientos de
+software est&aacute;n en <code>requirements/requerimientos.md</code>.</p>
 
 <h2>Archivos crudos</h2>
 <ul>

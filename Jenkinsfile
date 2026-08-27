@@ -131,6 +131,13 @@ pipeline {
                     }
                 }
 
+                stage('Matriz de trazabilidad (Requisitos)') {
+                    when { expression { params.RUN_DOCS } }
+                    steps {
+                        bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest python3 /work/ci/traceability_matrix.py'
+                    }
+                }
+
                 stage('Analisis de cobertura') {
                     when { expression { params.RUN_COVERAGE } }
                     steps {
@@ -170,7 +177,7 @@ pipeline {
         success {
             echo '✅ Full build completed successfully!'
             // Fix: la cobertura se escribe en build/coverage (no tests/build/coverage).
-            archiveArtifacts artifacts: "build/DockerDebug/*.elf, build/DockerDebug/*.bin, build/coverage/**/*, docs/html/**/*, build/static/**/*, build/evidence/**/*"
+            archiveArtifacts artifacts: "build/DockerDebug/*.elf, build/DockerDebug/*.bin, build/coverage/**/*, docs/html/**/*, build/static/**/*, build/traceability/**/*, build/evidence/**/*"
             script {
                 // publishHTML requiere el plugin "HTML Publisher".
                 try {
@@ -181,6 +188,10 @@ pipeline {
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                  reportDir: 'build/coverage', reportFiles: 'index.html', reportName: 'Coverage'])
                 } catch (e) { echo "HTML Publisher plugin faltante para Coverage: ${e}" }
+                try {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                 reportDir: 'build/traceability', reportFiles: 'matrix.html', reportName: 'Requisitos (matriz)'])
+                } catch (e) { echo "HTML Publisher plugin faltante para matriz de requisitos: ${e}" }
                 try {
                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                  reportDir: 'build/static', reportFiles: 'index.html', reportName: 'Static Analysis'])
