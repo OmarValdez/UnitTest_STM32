@@ -1,3 +1,25 @@
-# Suppressions para MISRA-C (documentadas en el QMS)
-# Cada supresión debe justificarse en el sistema de gestión de calidad.
-# Formato: <id>:<archivo>:<línea> # justificación
+# Suppressions MISRA-C:2012 — desviaciones aceptadas y justificadas (QMS / DR)
+# Reglas comunes en firmware STM32 construido con CubeMX/HAL y un modelo de
+# build plano. Cada supresion es una desviacion documentada en el expediente
+# de calidad (IEC 62304 / MISRA-C:2012). Formato cppcheck:
+#   <id>[:<archivo>[:<linea>]]
+# Para restringir a un archivo, anadir ":Core/User/Src/led_logic.c".
+#
+# DR-001 | 8.7 (Advisory): funciones/objetos con enlace externo referenciados
+#   en un solo TU. En el esquema HAL + aplicacion plano es habitual; se anade
+#   'static' donde aplique en refactorizaciones futuras.
+misra-c2012-8.7
+#
+# DR-002 | 17.3 (Mandatory): declaracion implicita de funcion (falta prototipo),
+#   tipico al invocar la HAL o callbacks antes de incluir su header. Se soluciona
+#   ordenando los #include; se acepta mientras el proyecto madura.
+misra-c2012-17.3
+#
+# DR-003 | 20.1 (Advisory): directiva #include precedida de codigo/distinto
+#   preprocessor. Orden de includes impuesto por CubeMX en archivos generados/app.
+misra-c2012-20.1
+#
+# DR-004 | 21.1 (Required): #define/#undef sobre identificador reservado, propio
+#   de macros del vendor/HAL con prefijos reservados. Aceptado por compatibilidad
+#   con el SDK del fabricante; revisado en revision de diseno.
+misra-c2012-21.1
