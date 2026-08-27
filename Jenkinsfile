@@ -167,25 +167,15 @@ pipeline {
                                  reportDir: 'build/static', reportFiles: 'index.html', reportName: 'Static Analysis'])
                 } catch (e) { echo "HTML Publisher plugin faltante para Static Analysis: ${e}" }
             }
-            // Publica el estado del build en GitHub (commit status) para poder
-            // exigirlo como check obligatorio en la proteccion de rama. Requiere
-            // plugin GitHub + credencial configurada en Jenkins. Contexto fijo
-            // para que el nombre del check sea estable (jenkins/ci).
-            script {
-                try {
-                    githubNotify(status: 'SUCCESS', context: 'jenkins/ci',
-                                  description: 'Jenkins build OK')
-                } catch (Throwable t) { echo "githubNotify no disponible (omitiendo): ${t}" }
-            }
+            // Jenkins reporta su estado en GitHub automaticamente con contexto
+            // 'continuous-integration/jenkins/branch' (builds de rama) y
+            // 'continuous-integration/jenkins/pr-head' (HEAD del PR) cuando el job
+            // es Multibranch con la fuente GitHub y la credencial configurada.
+            // No se usa githubNotify: para exigirlo como gate basta agregar
+            // 'continuous-integration/jenkins/pr-head' como required status check.
         }
         failure {
             echo '❌ Full build failed. Check Jenkins logs.'
-            script {
-                try {
-                    githubNotify(status: 'FAILURE', context: 'jenkins/ci',
-                                  description: 'Jenkins build fallo')
-                } catch (Throwable t) { echo "githubNotify no disponible (omitiendo): ${t}" }
-            }
         }
     }
 }
