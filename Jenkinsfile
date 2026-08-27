@@ -146,6 +146,12 @@ pipeline {
                         bat 'docker run --rm -e COVERAGE_THRESHOLD -v "%WORKSPACE%:/work" -w /work sw-medico:latest python3 /work/ci/coverage_gate.py'
                     }
                 }
+
+                stage('Paquete de Evidencia (SBOM + bundle)') {
+                    steps {
+                        bat 'docker run --rm -e GIT_COMMIT -v "%WORKSPACE%:/work" -w /work sw-medico:latest python3 /work/ci/evidence_bundle.py'
+                    }
+                }
             }
         }
     }
@@ -164,7 +170,7 @@ pipeline {
         success {
             echo '✅ Full build completed successfully!'
             // Fix: la cobertura se escribe en build/coverage (no tests/build/coverage).
-            archiveArtifacts artifacts: "build/DockerDebug/*.elf, build/DockerDebug/*.bin, build/coverage/**/*, docs/html/**/*, build/static/**/*"
+            archiveArtifacts artifacts: "build/DockerDebug/*.elf, build/DockerDebug/*.bin, build/coverage/**/*, docs/html/**/*, build/static/**/*, build/evidence/**/*"
             script {
                 // publishHTML requiere el plugin "HTML Publisher".
                 try {
