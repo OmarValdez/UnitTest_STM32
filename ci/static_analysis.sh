@@ -7,6 +7,15 @@ set -uo pipefail
 
 mkdir -p build/static
 
+# === MACROS / TOOGLES (configurables desde Jenkins via env) ===
+# Por defecto todo activado; un desarrollador puede desactivar partes
+# localmente, p.ej.: RUN_FLAWFINDER=0 FLAWFINDER_MINLEVEL=3 bash ci/static_analysis.sh
+RUN_CPPCHECK="${RUN_CPPCHECK:-1}"
+RUN_MISRA="${RUN_MISRA:-1}"
+RUN_COMPLEXITY="${RUN_COMPLEXITY:-1}"
+RUN_FLAWFINDER="${RUN_FLAWFINDER:-1}"
+FLAWFINDER_MINLEVEL="${FLAWFINDER_MINLEVEL:-1}"
+
 SRC=Core/Src
 USERSRC=Core/User/Src
 INC=Core/Inc
@@ -33,17 +42,22 @@ EXTRA=""
 for f in "${EXCLUDES[@]}"; do EXTRA="$EXTRA -i $f"; done
 
 # --- MISRA-C (requiere el texto de reglas licenciado) ---
-if [ -f "$MISRA_JSON" ] && [ -f "$MISRA_TXT" ]; then
+if [ "$RUN_MISRA" = "1" ] && [ -f "$MISRA_JSON" ] && [ -f "$MISRA_TXT" ]; then
     echo "MISRA-C habilitado (texto de reglas encontrado)"
     ADDON="--addon=$MISRA_JSON"
 else
-    echo "MISRA-C no disponible (falta config/misra.txt). Analisis base solo."
+    if [ "$RUN_MISRA" != "1" ]; then
+        echo "MISRA-C deshabilitado (macro RUN_MISRA=0)"
+    else
+        echo "MISRA-C no disponible (falta config/misra.txt). Analisis base solo."
+    fi
     ADDON=""
 fi
 
 # cppcheck escribe el reporte XML a un archivo (no a stderr) para que el
 # dashboard lo pueda parsear. Los errores/warning y MISRA se reportan pero
 # NO bloquean el pipeline (el equipo debe ir limpiandolos para IEC 62304).
+if [ "$RUN_CPPCHECK" = "1" ]; then
 cppcheck \
     --enable=warning,style,performance,portability,unusedFunction \
     --std=c11 --language=c \
@@ -54,6 +68,10 @@ cppcheck \
     --output-file=build/static/cppcheck.xml \
     $EXTRA \
     "$SRC" "$USERSRC" 2> build/static/cppcheck_progress.txt || true
+else
+    echo "cppcheck deshabilitado (macro RUN_CPPCHECK=0)"
+    printf '<results version="2"></results>\n' > build/static/cppcheck.xml
+fi
 
 if grep -E '<error [^>]*severity="(error|warning)"' build/static/cppcheck.xml \
         | grep -iv 'id="misra-config"'; then
@@ -68,6 +86,7 @@ fi
 echo "Complejidad ciclomatica (lizard)..."
 LIZ_EXTRA=()
 for f in "${EXCLUDES[@]}"; do LIZ_EXTRA+=("-x" "$f"); done
+if [ "$RUN_COMPLEXITY" = "1" ]; then
 # Reporte legible para revision rapida (umbral CCN > 10, longitud > 50)
 lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 \
     > build/static/complexity.txt 2>&1 || true
@@ -79,6 +98,11 @@ lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 \
 # pagina aparece en blanco al hacer clic desde el reporte.
 lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 --xml 2>/dev/null \
     | grep -v "xml-stylesheet" > build/static/complexity.xml || true
+else
+    echo "Complejidad deshabilitada (macro RUN_COMPLEXITY=0)"
+    : > build/static/complexity.txt
+    : > build/static/complexity.xml
+fi
 
 # --- Analisis de seguridad de codigo (flawfinder) ---
 # Solo codigo de usuario: toda la carpeta Core/User/** mas los archivos
@@ -89,10 +113,14 @@ FF_FILES=()
 while IFS= read -r f; do [ -n "$f" ] && FF_FILES+=("$f"); done < <(find Core/User -type f 2>/dev/null || true)
 [ -f "Core/Src/main.c" ] && FF_FILES+=("Core/Src/main.c")
 [ -f "Core/Inc/main.h" ] && FF_FILES+=("Core/Inc/main.h")
-if [ ${#FF_FILES[@]} -gt 0 ]; then
-    flawfinder --quiet --minlevel=1 --context --html "${FF_FILES[@]}" > build/static/flawfinder.html 2>&1 || true
+if [ "$RUN_FLAWFINDER" = "1" ]; then
+    if [ ${#FF_FILES[@]} -gt 0 ]; then
+        flawfinder --quiet --minlevel="$FLAWFINDER_MINLEVEL" --context --html "${FF_FILES[@]}" > build/static/flawfinder.html 2>&1 || true
+    else
+        echo "flawfinder: no se encontraron archivos de usuario para analizar" > build/static/flawfinder.html
+    fi
 else
-    echo "flawfinder: no se encontraron archivos de usuario para analizar" > build/static/flawfinder.html
+    echo "flawfinder deshabilitado (macro RUN_FLAWFINDER=0, nivel=$FLAWFINDER_MINLEVEL)" > build/static/flawfinder.html
 fi
 
 # --- Reporte HTML unificado ---

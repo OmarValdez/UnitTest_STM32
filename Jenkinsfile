@@ -6,14 +6,42 @@ pipeline {
         timeout(time: 90, unit: 'MINUTES')
     }
 
+    // === MACROS / TOOGLES DE CALIDAD ===
+    // Cada analisis se puede activar/desactivar y, donde aplica, fijar su
+    // nivel/umbral. Estos parametros aparecen en la UI del job (y por rama en
+    // Multibranch) para activarlos/ajustarlos sin editar el codigo.
+    parameters {
+        booleanParam(name: 'RUN_CPPCHECK',     defaultValue: true, description: 'cppcheck + estilo (calidad)')
+        booleanParam(name: 'RUN_MISRA',        defaultValue: true, description: 'MISRA-C:2012 (requiere reglas licenciadas en config/)')
+        booleanParam(name: 'RUN_COMPLEXITY',   defaultValue: true, description: 'Complejidad ciclomatica (lizard, CCN>10)')
+        booleanParam(name: 'RUN_FLAWFINDER',   defaultValue: true, description: 'Analisis de seguridad flawfinder (solo Core/User + main)')
+        choice(name: 'FLAWFINDER_MINLEVEL', choices: ['1','2','3','4','5'], description: 'Nivel minimo de riesgo flawfinder (1=bajo .. 5=alto)')
+        booleanParam(name: 'RUN_COVERAGE',     defaultValue: true, description: 'Cobertura con gcovr')
+        string(name: 'COVERAGE_THRESHOLD', defaultValue: '80', description: 'Umbral minimo de cobertura de lineas (%) para el quality gate')
+        booleanParam(name: 'RUN_SIM',          defaultValue: true, description: 'Simulacion en Renode')
+        booleanParam(name: 'RUN_DOCS',         defaultValue: true, description: 'Documentacion Doxygen')
+    }
+
     // Dispara automaticamente ante cada push sin depender de webhooks de
     // GitHub: como Jenkins queda en la LAN (IP privada), los webhooks de
     // GitHub cloud no pueden alcanzarlo. El polling SCM hace que Jenkins
     // consulte el repo periodicamente y construya al detectar cambios.
-    // Para cubrir CUALQUIER rama, configurar este job como Multibranch
-    // Pipeline con Branch Specifier "**" y Indexing periodico.
+    // En un job Multibranch este trigger se ignora; usar "Branch Indexing"
+    // periodico (p.ej. cada 1-2 min) en la config del job.
     triggers {
         pollSCM('H/2 * * * *')
+    }
+
+    environment {
+        RUN_CPPCHECK       = "${params.RUN_CPPCHECK ? '1' : '0'}"
+        RUN_MISRA          = "${params.RUN_MISRA ? '1' : '0'}"
+        RUN_COMPLEXITY     = "${params.RUN_COMPLEXITY ? '1' : '0'}"
+        RUN_FLAWFINDER     = "${params.RUN_FLAWFINDER ? '1' : '0'}"
+        FLAWFINDER_MINLEVEL = "${params.FLAWFINDER_MINLEVEL}"
+        RUN_COVERAGE       = "${params.RUN_COVERAGE ? '1' : '0'}"
+        COVERAGE_THRESHOLD = "${params.COVERAGE_THRESHOLD}"
+        RUN_SIM            = "${params.RUN_SIM ? '1' : '0'}"
+        RUN_DOCS           = "${params.RUN_DOCS ? '1' : '0'}"
     }
 
     stages {
@@ -68,6 +96,7 @@ pipeline {
                 }
 
                 stage('Simulacion con Renode') {
+                    when { expression { params.RUN_SIM } }
                     steps {
                         // Timeout para evitar que Renode cuelgue el pipeline.
                         timeout(time: 5, unit: 'MINUTES') {
@@ -78,19 +107,30 @@ pipeline {
 
                 stage('Analisis estatico (MISRA-C)') {
                     steps {
-                        bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/static_analysis.sh'
+                        bat 'docker run --rm -e RUN_CPPCHECK -e RUN_MISRA -e RUN_COMPLEXITY -e RUN_FLAWFINDER -e FLAWFINDER_MINLEVEL -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/static_analysis.sh'
                     }
                 }
 
                 stage('Documentacion (Doxygen)') {
+                    when { expression { params.RUN_DOCS } }
                     steps {
                         bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/document.sh'
                     }
                 }
 
                 stage('Analisis de cobertura') {
+                    when { expression { params.RUN_COVERAGE } }
                     steps {
                         bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/coverage.sh'
+                    }
+                }
+
+                stage('Quality Gate: Cobertura') {
+                    when { expression { params.RUN_COVERAGE } }
+                    steps {
+                        // Falla el build si la cobertura de lineas esta por
+                        // debajo de COVERAGE_THRESHOLD (macro configurable).
+                        bat 'docker run --rm -e COVERAGE_THRESHOLD -v "%WORKSPACE%:/work" -w /work sw-medico:latest python3 /work/ci/coverage_gate.py'
                     }
                 }
             }
