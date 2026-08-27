@@ -95,7 +95,8 @@ pipeline {
             stages {
                 stage('Compile Firmware') {
                     steps {
-                        bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/compile.sh'
+                        // En builds de tag, FW_VERSION inyecta la version en el binario.
+                        bat 'docker run --rm -e FW_VERSION=%TAG_NAME% -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/compile.sh'
                     }
                 }
 
@@ -157,6 +158,19 @@ pipeline {
                 stage('Paquete de Evidencia (SBOM + bundle)') {
                     steps {
                         bat 'docker run --rm -e GIT_COMMIT -v "%WORKSPACE%:/work" -w /work sw-medico:latest python3 /work/ci/evidence_bundle.py'
+                    }
+                }
+
+                stage('Release: firmar y publicar en GitHub') {
+                    when { expression { env.TAG_NAME != null } }
+                    steps {
+                        // Firma real con la clave privada (credential release-sign-key).
+                        // El GitHub Release se crea desde el agente (tiene git + Invoke-RestMethod).
+                        withCredentials([file(credentialsId: 'release-sign-key', variable: 'KEY'),
+                                         string(credentialsId: 'github-token', variable: 'GHT')]) {
+                            bat 'docker run --rm -e FW_VERSION=%TAG_NAME% -v "%KEY%:/key.pem:ro" -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/release_sign.sh %TAG_NAME%'
+                            powershell -NoProfile -File ci/release_github.ps1 -Version %TAG_NAME% -Token $env:GHT
+                        }
                     }
                 }
             }
