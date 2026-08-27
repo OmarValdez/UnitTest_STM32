@@ -2,7 +2,6 @@ name: Pull Request Checks
 
 on:
   pull_request:
-  push:
 
 # Cancela ejecuciones obsoletas del mismo PR/ref para ahorrar recursos.
 concurrency:
