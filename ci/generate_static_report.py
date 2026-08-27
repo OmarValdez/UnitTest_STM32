@@ -141,16 +141,18 @@ html_doc = """<!DOCTYPE html>
 <h1>Reporte de Analisis Estatico</h1>
 <p class="note">Este reporte consolida <b>cuatro analisis estaticos</b> del
 codigo fuente (se analiza sin ejecutarlo), orientados a calidad, seguridad y
-cumplimiento para firmware embebido (IEC 62304). <b>Ningun hallazgo bloquea el
-pipeline</b>: el equipo debe revisarlos y reducirlos progresivamente. Los
+cumplimiento para firmware embebido (IEC 62304). El pipeline aplica
+<b>Quality Gates</b>: las violaciones <b>MISRA-C</b> y la complejidad ciclomatica
+por encima de su umbral <b>bloquean el build</b>; los hallazgos de cppcheck/estilo
+y flawfinder son informativos y el equipo los reduce progresivamente. Los
 archivos crudos estan enlazados al final para auditoria.</p>
 
 <div class="summary">
  <p><b>Resumen</b></p>
  <ul>
   <li>cppcheck / estilo: <b>{n_cpp}</b> hallazgos</li>
-  <li>MISRA-C: <b>{n_misra}</b> violaciones (reporte, no bloquea)</li>
-  <li>Complejidad (lizard, CCN &gt; {cx_th}): <b>{n_cx}</b> funciones</li>
+   <li>MISRA-C: <b>{n_misra}</b> violaciones (bloquea el pipeline si &gt; umbral MISRA_THRESHOLD)</li>
+   <li>Complejidad (lizard, CCN &gt; {cx_th}): <b>{n_cx}</b> funciones (bloquea si &gt; COMPLEXITY_THRESHOLD)</li>
   <li>flawfinder (seguridad, nivel &gt;= 1): <b>{n_ff}</b> hallazgos</li>
   <li>Total cppcheck + MISRA: <b>{n_total}</b></li>
  </ul>
