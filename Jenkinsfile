@@ -167,9 +167,25 @@ pipeline {
                                  reportDir: 'build/static', reportFiles: 'index.html', reportName: 'Static Analysis'])
                 } catch (e) { echo "HTML Publisher plugin faltante para Static Analysis: ${e}" }
             }
+            // Publica el estado del build en GitHub (commit status) para poder
+            // exigirlo como check obligatorio en la proteccion de rama. Requiere
+            // plugin GitHub + credencial configurada en Jenkins. Contexto fijo
+            // para que el nombre del check sea estable (jenkins/ci).
+            script {
+                try {
+                    githubNotify(status: 'SUCCESS', context: 'jenkins/ci',
+                                  description: 'Jenkins build OK')
+                } catch (e) { echo "githubNotify no configurado (omitiendo): ${e}" }
+            }
         }
         failure {
             echo '❌ Full build failed. Check Jenkins logs.'
+            script {
+                try {
+                    githubNotify(status: 'FAILURE', context: 'jenkins/ci',
+                                  description: 'Jenkins build fallo')
+                } catch (e) { echo "githubNotify no configurado (omitiendo): ${e}" }
+            }
         }
     }
 }
