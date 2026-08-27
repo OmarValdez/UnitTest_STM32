@@ -13,7 +13,9 @@ pipeline {
     parameters {
         booleanParam(name: 'RUN_CPPCHECK',     defaultValue: true, description: 'cppcheck + estilo (calidad)')
         booleanParam(name: 'RUN_MISRA',        defaultValue: true, description: 'MISRA-C:2012 (requiere reglas licenciadas en config/)')
-        booleanParam(name: 'RUN_COMPLEXITY',   defaultValue: true, description: 'Complejidad ciclomatica (lizard, CCN>10)')
+        string(name: 'MISRA_THRESHOLD', defaultValue: '0', description: 'Max violaciones MISRA permitidas antes de fallar el build (gate)')
+        booleanParam(name: 'RUN_COMPLEXITY',   defaultValue: true, description: 'Complejidad ciclomatica (lizard)')
+        string(name: 'COMPLEXITY_THRESHOLD', defaultValue: '10', description: 'Umbral CCN para reporte y gate de complejidad')
         booleanParam(name: 'RUN_FLAWFINDER',   defaultValue: true, description: 'Analisis de seguridad flawfinder (solo Core/User + main)')
         choice(name: 'FLAWFINDER_MINLEVEL', choices: ['1','2','3','4','5'], description: 'Nivel minimo de riesgo flawfinder (1=bajo .. 5=alto)')
         booleanParam(name: 'RUN_COVERAGE',     defaultValue: true, description: 'Cobertura con gcovr')
@@ -38,6 +40,8 @@ pipeline {
         RUN_COMPLEXITY     = "${params.RUN_COMPLEXITY ? '1' : '0'}"
         RUN_FLAWFINDER     = "${params.RUN_FLAWFINDER ? '1' : '0'}"
         FLAWFINDER_MINLEVEL = "${params.FLAWFINDER_MINLEVEL}"
+        MISRA_THRESHOLD    = "${params.MISRA_THRESHOLD}"
+        COMPLEXITY_THRESHOLD = "${params.COMPLEXITY_THRESHOLD}"
         RUN_COVERAGE       = "${params.RUN_COVERAGE ? '1' : '0'}"
         COVERAGE_THRESHOLD = "${params.COVERAGE_THRESHOLD}"
         RUN_SIM            = "${params.RUN_SIM ? '1' : '0'}"
@@ -107,7 +111,16 @@ pipeline {
 
                 stage('Analisis estatico (MISRA-C)') {
                     steps {
-                        bat 'docker run --rm -e RUN_CPPCHECK -e RUN_MISRA -e RUN_COMPLEXITY -e RUN_FLAWFINDER -e FLAWFINDER_MINLEVEL -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/static_analysis.sh'
+                        bat 'docker run --rm -e RUN_CPPCHECK -e RUN_MISRA -e RUN_COMPLEXITY -e RUN_FLAWFINDER -e FLAWFINDER_MINLEVEL -e COMPLEXITY_THRESHOLD -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/static_analysis.sh'
+                    }
+                }
+
+                stage('Quality Gate: Estatica') {
+                    when { expression { params.RUN_CPPCHECK || params.RUN_MISRA || params.RUN_COMPLEXITY } }
+                    steps {
+                        // Falla el build si MISRA > MISRA_THRESHOLD o si hay
+                        // funciones con CCN > COMPLEXITY_THRESHOLD.
+                        bat 'docker run --rm -e MISRA_THRESHOLD -e COMPLEXITY_THRESHOLD -v "%WORKSPACE%:/work" -w /work sw-medico:latest python3 /work/ci/quality_gate.py'
                     }
                 }
 

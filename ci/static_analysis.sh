@@ -87,8 +87,8 @@ echo "Complejidad ciclomatica (lizard)..."
 LIZ_EXTRA=()
 for f in "${EXCLUDES[@]}"; do LIZ_EXTRA+=("-x" "$f"); done
 if [ "$RUN_COMPLEXITY" = "1" ]; then
-# Reporte legible para revision rapida (umbral CCN > 10, longitud > 50)
-lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 \
+# Reporte legible para revision rapida (umbral CCN > COMPLEXITY_THRESHOLD, longitud > 50)
+lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C "${COMPLEXITY_THRESHOLD:-10}" -L 50 \
     > build/static/complexity.txt 2>&1 || true
 # XML (formato cppncss) para integracion con Jenkins. Se usa --xml (forma
 # larga, estable entre versiones) en lugar de -X. El dashboard parsea el
@@ -96,7 +96,7 @@ lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 \
 # Se filtra la linea 'xml-stylesheet' para que el navegador muestre el XML como
 # arbol legible; si se deja, el navegador intenta aplicar la XSL remota y la
 # pagina aparece en blanco al hacer clic desde el reporte.
-lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C 10 -L 50 --xml 2>/dev/null \
+lizard "${LIZ_EXTRA[@]}" "$SRC" "$USERSRC" -C "${COMPLEXITY_THRESHOLD:-10}" -L 50 --xml 2>/dev/null \
     | grep -v "xml-stylesheet" > build/static/complexity.xml || true
 else
     echo "Complejidad deshabilitada (macro RUN_COMPLEXITY=0)"

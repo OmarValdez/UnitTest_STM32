@@ -16,6 +16,7 @@ OUT = os.path.join(STATIC, "index.html")
 CPPCHECK = os.path.join(STATIC, "cppcheck.xml")
 COMPLEXITY = os.path.join(STATIC, "complexity.txt")
 FLAWFINDER = os.path.join(STATIC, "flawfinder.html")
+COMPLEXITY_THRESHOLD = int(os.environ.get("COMPLEXITY_THRESHOLD", "10"))
 
 cpp_style = []
 misra_errors = []
@@ -68,7 +69,7 @@ if os.path.exists(COMPLEXITY):
                 func_name = m2.group(2)
                 fname = m2.group(3)
                 line_no = m2.group(4)
-            if ccn > 10:
+            if ccn > COMPLEXITY_THRESHOLD:
                 complex_funcs.append((func_name, fname, line_no, ccn))
     except Exception as ex:
         complex_funcs.append(("parse error: %s" % ex, "", "", 0))
@@ -114,7 +115,7 @@ rows_cx = "".join(
     "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
         esc(n), esc(f), esc(l), esc(c))
     for (n, f, l, c) in complex_funcs) or \
-    "<tr><td colspan='4'>Sin funciones con CCN &gt; 10</td></tr>"
+     "<tr><td colspan='4'>Sin funciones con CCN &gt; %d</td></tr>" % COMPLEXITY_THRESHOLD
 
 rows_ff = "".join(
     "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
@@ -149,7 +150,7 @@ archivos crudos estan enlazados al final para auditoria.</p>
  <ul>
   <li>cppcheck / estilo: <b>{n_cpp}</b> hallazgos</li>
   <li>MISRA-C: <b>{n_misra}</b> violaciones (reporte, no bloquea)</li>
-  <li>Complejidad (lizard, CCN &gt; 10): <b>{n_cx}</b> funciones</li>
+  <li>Complejidad (lizard, CCN &gt; {cx_th}): <b>{n_cx}</b> funciones</li>
   <li>flawfinder (seguridad, nivel &gt;= 1): <b>{n_ff}</b> hallazgos</li>
   <li>Total cppcheck + MISRA: <b>{n_total}</b></li>
  </ul>
@@ -167,8 +168,8 @@ archivos crudos estan enlazados al final para auditoria.</p>
   autorizadas estan en <code>tools/cppcheck/misra_suppressions.txt</code>.</li>
  <li><b>Complejidad ciclomatica (lizard)</b>: el CCN cuenta los caminos
   independientes de una funcion. A mayor CCN, mas casos de prueba necesarios y
-  mayor probabilidad de defectos. Por convencion, <b>CCN &gt; 10</b> indica una
-  funcion dificil de probar/mantener y candidata a refactorizar.</li>
+   mayor probabilidad de defectos. Por convencion, <b>CCN &gt; {cx_th}</b> indica una
+   funcion dificil de probar/mantener y candidata a refactorizar.</li>
  <li><b>flawfinder</b>: escaneo de seguridad que busca funciones C/C++ peligrosas
   (p. ej. <code>strcpy</code>, <code>gets</code>) y patrones de desbordamiento de
   buffer. El "Riesgo" va de 1 (bajo) a 5 (alto); aqui se reporta nivel &gt;= 1.</li>
@@ -208,6 +209,7 @@ sustituirse por una alternativa segura (p. ej. <code>snprintf</code> en lugar de
 </body></html>
 """.format(n_cpp=len(cpp_style), n_misra=len(misra_errors),
            n_cx=len(complex_funcs), n_ff=ff_hits,
+           cx_th=COMPLEXITY_THRESHOLD,
            n_total=len(cpp_style) + len(misra_errors),
            rows_cpp_style=rows_cpp_style, rows_misra=rows_misra,
            rows_cx=rows_cx, rows_ff=rows_ff)
