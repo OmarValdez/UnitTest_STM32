@@ -95,7 +95,7 @@ pipeline {
             stages {
                 stage('Compile Firmware') {
                     steps {
-                        bat 'docker run --rm -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/compile.sh'
+                        bat 'docker run --rm -e FW_VERSION=%BRANCH_NAME% -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/compile.sh'
                     }
                 }
 
@@ -161,14 +161,14 @@ pipeline {
                 }
 
                 stage('Release: firmar y publicar en GitHub') {
-                    when { expression { env.TAG_NAME != null } }
+                    when { expression { env.BRANCH_NAME != null && env.BRANCH_NAME.matches('v[0-9]+\\.[0-9]+\\.[0-9]+.*') } }
                     steps {
                         // Firma real con la clave privada (credential release-sign-key).
-                        // El GitHub Release se crea desde el agente (tiene git + Invoke-RestMethod).
+                        // El GitHub Release se crea desde el agente (curl.exe + token github-token).
                         withCredentials([file(credentialsId: 'release-sign-key', variable: 'KEY'),
                                          string(credentialsId: 'github-token', variable: 'GHT')]) {
-                            bat 'docker run --rm -e FW_VERSION=%TAG_NAME% -v "%KEY%:/key.pem:ro" -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/release_sign.sh %TAG_NAME%'
-                            bat 'powershell -NoProfile -ExecutionPolicy Bypass -File ci/release_github.ps1 -Version %TAG_NAME% -Token %GHT%'
+                            bat 'docker run --rm -e FW_VERSION=%BRANCH_NAME% -v "%KEY%:/key.pem:ro" -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/release_sign.sh %BRANCH_NAME%'
+                            bat 'powershell -NoProfile -ExecutionPolicy Bypass -File ci/release_github.ps1 -Version %BRANCH_NAME%'
                         }
                     }
                 }
