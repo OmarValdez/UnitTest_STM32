@@ -7,7 +7,7 @@ CMAKE_FLAGS="-S . -B build/DockerDebug -G Ninja \
     -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake \
     -DCMAKE_BUILD_TYPE=Debug"
 
-if [ -n "${FW_VERSION:-}" ]; then
+if [[ "${FW_VERSION:-}" == v* ]]; then
     mkdir -p build
     printf '#define FW_VERSION "%s"\n' "$FW_VERSION" > build/version.h
     CMAKE_FLAGS="$CMAKE_FLAGS -DCMAKE_C_FLAGS=-include/work/build/version.h"
