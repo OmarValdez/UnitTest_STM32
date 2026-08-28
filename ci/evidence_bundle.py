@@ -31,12 +31,38 @@ def run(cmd):
         return ""
 
 
+def read_text(path):
+    if not os.path.isfile(path):
+        return ""
+    return open(path, encoding="utf-8", errors="ignore").read()
+
+
+def parse_int(txt, pat):
+    m = re.search(pat, txt)
+    if not m:
+        return None
+    s = m.group(1)
+    try:
+        return int(s, 16) if s.lower().startswith("0x") else int(s)
+    except ValueError:
+        return None
+
+
 def git_version():
     env = os.environ.get("GIT_DESCRIBE", "").strip()
     if env:
         return env
     v = run("git describe --tags --always 2>/dev/null")
     return v or "0.1"
+
+
+def fw_version_from_header():
+    p = os.path.join(ROOT, "build", "version.h")
+    if os.path.isfile(p):
+        m = re.search(r'#define\s+FW_VERSION\s+"([^"]+)"', read_text(p))
+        if m:
+            return m.group(1)
+    return None
 
 
 def git_sha():
@@ -55,14 +81,54 @@ def proj_name():
     return "ST_UnitTest"
 
 
-def find_version(path, patterns):
-    if not os.path.isfile(path):
+def cmsis_core_version():
+    t = read_text(os.path.join(ROOT, "Drivers", "CMSIS", "Include", "cmsis_version.h"))
+    main = parse_int(t, r'__CM_CMSIS_VERSION_MAIN\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    sub = parse_int(t, r'__CM_CMSIS_VERSION_SUB\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    if main is None:
         return None
-    txt = open(path, encoding="utf-8", errors="ignore").read()
-    for pat in patterns:
-        m = re.search(pat, txt)
-        if m:
-            return m.group(1)
+    return "%d.%d" % (main, sub if sub is not None else 0)
+
+
+def cmsis_device_version():
+    t = read_text(os.path.join(ROOT, "Drivers", "CMSIS", "Device", "ST",
+                               "STM32F1xx", "Include", "stm32f1xx.h"))
+    main = parse_int(t, r'__STM32F1_CMSIS_VERSION_MAIN\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    sub1 = parse_int(t, r'__STM32F1_CMSIS_VERSION_SUB1\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    sub2 = parse_int(t, r'__STM32F1_CMSIS_VERSION_SUB2\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    if main is None:
+        return None
+    return "%d.%d.%d" % (main, sub1 or 0, sub2 or 0)
+
+
+def hal_version():
+    t = read_text(os.path.join(ROOT, "Drivers", "STM32F1xx_HAL_Driver",
+                               "Inc", "stm32f1xx_hal.h"))
+    main = parse_int(t, r'__STM32F1xx_HAL_VERSION_MAIN\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    sub1 = parse_int(t, r'__STM32F1xx_HAL_VERSION_SUB1\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    sub2 = parse_int(t, r'__STM32F1xx_HAL_VERSION_SUB2\s*\(\s*(0x[0-9A-Fa-f]+|\d+)')
+    if main is not None:
+        return "%d.%d.%d" % (main, sub1 or 0, sub2 or 0)
+    m = re.search(r'(?:V|v|Version\s*:?\s*)([0-9]+\.[0-9]+\.[0-9]+)', t)
+    if m:
+        return m.group(1)
+    return None
+
+
+def gemlock_version(name):
+    t = read_text(os.path.join(ROOT, "Gemfile.lock"))
+    if not t:
+        return None
+    m = re.search(r'^[ \t]*' + re.escape(name) + r'\s*\(([^)]+)\)', t, re.MULTILINE)
+    if m:
+        return m.group(1).strip()
+    return None
+
+
+def compiler_version():
+    out = run("arm-none-eabi-gcc --version")
+    if out:
+        return out.splitlines()[0].strip()
     return None
 
 
@@ -96,27 +162,31 @@ def build_sbom(version, sha):
         "purl": "pkg:generic/%s@%s" % (proj_name(), version),
         "hashes": fw_hashes,
     }
-    cmsis_ver = find_version(
-        os.path.join(ROOT, "Drivers", "CMSIS", "Include", "cmsis_version.h"),
-        [r'CMSIS_VERSION_STRING\s+"([\d.]+)"', r'#define\s+CMSIS_VERSION\s+(\d+)'],
-    )
-    hal_ver = find_version(
-        os.path.join(ROOT, "Drivers", "STM32F1xx_HAL_Driver", "Inc", "stm32f1xx_hal.h"),
-        [r'HAL_VERSION_STRING\s+"([\d.]+)"', r'#define\s+HAL_VERSION\s+(\d+)'],
-    )
+    cmsis_core = cmsis_core_version()
+    cmsis_dev = cmsis_device_version()
+    hal = hal_version()
+    ceedling = gemlock_version("ceedling")
+    unity = gemlock_version("unity")
+    compiler = compiler_version()
     libs = [
-        {"type": "library", "name": "CMSIS", "group": "ARM",
-         "version": cmsis_ver or "desconocida",
-         "purl": "pkg:generic/arm/cmsis@%s" % (cmsis_ver or "unknown")},
+        {"type": "library", "name": "CMSIS-Core", "group": "ARM",
+         "version": cmsis_core or "desconocida",
+         "purl": "pkg:generic/arm/cmsis-core@%s" % (cmsis_core or "unknown")},
+        {"type": "library", "name": "CMSIS-Device STM32F1", "group": "ARM",
+         "version": cmsis_dev or "desconocida",
+         "purl": "pkg:generic/arm/cmsis-device-stm32f1@%s" % (cmsis_dev or "unknown")},
         {"type": "library", "name": "STM32F1xx_HAL_Driver", "group": "STMicroelectronics",
-         "version": hal_ver or "desconocida",
-         "purl": "pkg:generic/st/stm32f1xx-hal@%s" % (hal_ver or "unknown")},
-        {"type": "library", "name": "Unity",
-         "version": "provista por Ceedling (no versionada en repo)",
-         "purl": "pkg:generic/unity@unknown"},
-        {"type": "library", "name": "Ceedling",
-         "version": "no versionada en repo",
-         "purl": "pkg:generic/ceedling@unknown"},
+         "version": hal or "no especificada en cabeceras (HAL_GetHalVersion en runtime)",
+         "purl": "pkg:generic/st/stm32f1xx-hal@%s" % (hal or "unknown")},
+        {"type": "library", "name": "Ceedling", "group": "ThrowTheSwitch",
+         "version": ceedling or "no fijada (Gemfile.lock ausente)",
+         "purl": "pkg:gem/ceedling@%s" % (ceedling or "unknown")},
+        {"type": "library", "name": "Unity", "group": "ThrowTheSwitch",
+         "version": unity or "no fijada (Gemfile.lock ausente)",
+         "purl": "pkg:gem/unity@%s" % (unity or "unknown")},
+        {"type": "library", "name": "GNU Arm Embedded GCC", "group": "ARM",
+         "version": compiler or "desconocida",
+         "purl": "pkg:generic/gcc-arm-none-eabi@%s" % (compiler or "unknown")},
     ]
     return {
         "bomFormat": "CycloneDX",
@@ -126,7 +196,10 @@ def build_sbom(version, sha):
         "metadata": {
             "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
             "component": fw,
-            "properties": [{"name": "evidence.commit", "value": sha}],
+            "properties": [
+                {"name": "evidence.commit", "value": sha},
+                {"name": "evidence.toolchain", "value": compiler or "desconocida"},
+            ],
         },
         "components": libs,
     }
@@ -134,7 +207,7 @@ def build_sbom(version, sha):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    version = git_version()
+    version = fw_version_from_header() or git_version()
     sha = git_sha()
     sbom = build_sbom(version, sha)
     sbom_path = os.path.join(OUT, "sbom.json")
@@ -172,9 +245,11 @@ def main():
         for m in missing:
             idx.append("- %s" % m)
     idx.append("")
-    idx.append("## SBOM")
-    idx.append("CycloneDX 1.5 en sbom.json. Componentes: firmware + CMSIS + "
-               "STM32F1xx_HAL_Driver + Unity + Ceedling.")
+    idx.append("## SBOM (CycloneDX 1.5)")
+    idx.append("Componentes: firmware + CMSIS-Core + CMSIS-Device STM32F1 + "
+               "STM32F1xx_HAL_Driver + Ceedling + Unity + GNU Arm Embedded GCC.")
+    for c in sbom["components"]:
+        idx.append("- %s@%s" % (c["name"], c["version"]))
     index_path = os.path.join(OUT, "evidencia.md")
     with open(index_path, "w", encoding="utf-8") as f:
         f.write("\n".join(idx) + "\n")
