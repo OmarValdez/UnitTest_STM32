@@ -159,6 +159,19 @@ pipeline {
                         bat 'docker run --rm -e GIT_COMMIT -v "%WORKSPACE%:/work" -w /work sw-medico:latest python3 /work/ci/evidence_bundle.py'
                     }
                 }
+
+                stage('Release: firmar y publicar en GitHub') {
+                    when { expression { env.TAG_NAME != null } }
+                    steps {
+                        // Firma real con la clave privada (credential release-sign-key).
+                        // El GitHub Release se crea desde el agente (tiene git + Invoke-RestMethod).
+                        withCredentials([file(credentialsId: 'release-sign-key', variable: 'KEY'),
+                                         string(credentialsId: 'github-token', variable: 'GHT')]) {
+                            bat 'docker run --rm -e FW_VERSION=%TAG_NAME% -v "%KEY%:/key.pem:ro" -v "%WORKSPACE%:/work" -w /work sw-medico:latest bash /work/ci/release_sign.sh %TAG_NAME%'
+                            bat 'powershell -NoProfile -ExecutionPolicy Bypass -File ci/release_github.ps1 -Version %TAG_NAME% -Token %GHT%'
+                        }
+                    }
+                }
             }
         }
     }
