@@ -67,12 +67,15 @@ foreach ($f in $files) {
     if (-not (Test-Path $f)) { Write-Host "OMITIDO (no existe): $f"; continue }
     $name = Split-Path $f -Leaf
     Write-Host "Subiendo $name ..."
-    $out = curl.exe -sS -w "`nHTTP_STATUS:%{http_code}" `
+    $tmp = New-TemporaryFile
+    $status = curl.exe -sS -w "%{http_code}" -o $tmp `
         -H "Authorization: Bearer $token" `
         -H "Content-Type: application/octet-stream" `
         --data-binary "@$f" "$upload`?name=$name"
-    Write-Host $out
-    if ($out -notmatch 'HTTP_STATUS:2\d\d') { Write-Error "Fallo al subir $name"; exit 1 }
+    $body = Get-Content $tmp -Raw
+    Write-Host $body
+    Remove-Item $tmp -Force
+    if ($status -notmatch '^2') { Write-Error "Fallo al subir $name (HTTP $status)"; exit 1 }
 }
 
 Write-Host "Release $Version completo: $($rel.html_url)"
